@@ -1,0 +1,52 @@
+# Cloud Run GPU inference service
+#
+# Deploy:
+#   gcloud run services replace deploy/cloudrun_inference.yaml --region=REGION
+#
+# Prerequisites:
+#   - GPU quota approved for your project/region (request via quotas page)
+#   - Cloud Run GPU support enabled (currently in preview for L4 GPUs)
+#   - Image pushed to Artifact Registry (see cloudbuild.yaml)
+#
+# Supported GPU types on Cloud Run (as of 2025): nvidia-l4
+# Regions with GPU support: us-central1, asia-northeast1, europe-west4 (check docs)
+
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: mgvaovao-api
+  annotations:
+    run.googleapis.com/launch-stage: BETA
+spec:
+  template:
+    metadata:
+      annotations:
+        # GPU type — nvidia-l4 is the current Cloud Run GPU offering
+        run.googleapis.com/accelerator: nvidia-l4
+        # Keep one instance warm to avoid cold-start model loading
+        autoscaling.knative.dev/minScale: "1"
+        autoscaling.knative.dev/maxScale: "4"
+    spec:
+      containers:
+        - image: REGION-docker.pkg.dev/PROJECT_ID/mgvaovao/mgvaovao:cuda-latest
+          ports:
+            - containerPort: 8000
+          resources:
+            limits:
+              cpu: "8"
+              memory: 32Gi
+              nvidia.com/gpu: "1"
+          env:
+            - name: MGVAOVAO_DEVICE
+              value: cuda
+            - name: MGVAOVAO_WHISPER_MODEL_SIZE
+              value: small
+            - name: MGVAOVAO_CHECKPOINTS_DIR
+              value: /mgvaovao/checkpoints
+          # Give models time to load on startup
+          startupProbe:
+            httpGet:
+              path: /health
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 30

@@ -1,0 +1,49 @@
+# GPU override for docker-compose — use when your machine has an NVIDIA GPU.
+#
+# Usage:
+#   docker-compose -f docker-compose.yml -f docker-compose.gpu.yml up -d api
+#   docker-compose -f docker-compose.yml -f docker-compose.gpu.yml run --rm train-nllb
+#
+# First build (slow — 3.75 GB CUDA layer extraction, one-time cost):
+#   docker-compose -f docker-compose.yml -f docker-compose.gpu.yml build
+#
+# Requirements:
+#   - NVIDIA GPU driver installed on Windows
+#   - WSL2 GPU passthrough (enabled by default on Win10 21H2+ / Win11)
+#   - Docker Desktop with GPU support enabled (Settings → Resources → GPU)
+
+version: "3.9"
+
+x-gpu: &gpu
+  build:
+    context: .
+    dockerfile: Dockerfile.cuda
+  image: mgvaovao:cuda-latest
+  environment:
+    MGVAOVAO_DEVICE: cuda
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
+
+services:
+  api:
+    <<: *gpu
+
+  train-nllb:
+    <<: *gpu
+
+  train-tts:
+    <<: *gpu
+
+  evaluate:
+    <<: *gpu
+
+  seed:
+    <<: *gpu
+
+  preprocess:
+    <<: *gpu

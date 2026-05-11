@@ -1,0 +1,37 @@
+# Vertex AI custom training job — NLLB or TTS fine-tuning
+#
+# Usage:
+#   gcloud ai custom-jobs create \
+#     --region=REGION \
+#     --display-name=mgvaovao-train-nllb \
+#     --config=deploy/vertex_training.yaml
+#
+# Replace IMAGE_URI with the full Artifact Registry path, e.g.:
+#   europe-west1-docker.pkg.dev/PROJECT_ID/mgvaovao/mgvaovao:cuda-latest
+
+workerPoolSpecs:
+  - machineSpec:
+      machineType: n1-standard-8
+      acceleratorType: NVIDIA_TESLA_T4
+      acceleratorCount: 1
+    replicaCount: 1
+    containerSpec:
+      imageUri: REGION-docker.pkg.dev/PROJECT_ID/mgvaovao/mgvaovao:cuda-latest
+      command:
+        - python
+        - -m
+        - training.train_nllb
+      args:
+        - --dialect
+        - betsileo
+      env:
+        - name: MGVAOVAO_DEVICE
+          value: cuda
+        - name: MGVAOVAO_NLLB_FP16
+          value: "true"
+        - name: MGVAOVAO_CHECKPOINTS_DIR
+          value: /gcs/BUCKET_NAME/checkpoints
+        - name: MGVAOVAO_DATASET_DIR
+          value: /gcs/BUCKET_NAME/dataset
+        - name: MGVAOVAO_HF_CACHE_DIR
+          value: /gcs/BUCKET_NAME/.cache/huggingface

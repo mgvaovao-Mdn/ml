@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Secrets & local config
+.env
+*.key
+*.pem
+*.p12
+
+# Data & model weights (large; stored in GCS / mounted as volumes)
+dataset/
+checkpoints/
+*.bin
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+
+# HuggingFace / Torch caches
+.cache/
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Eval outputs (regenerated)
+eval_results.csv
+eval_audio/
+
+# Claude Code internal files
+.claude/

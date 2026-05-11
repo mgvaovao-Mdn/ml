@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MGVaovao — Live Translation</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0f172a;
+      --surface: #1e293b;
+      --border:  #334155;
+      --text:    #f1f5f9;
+      --muted:   #94a3b8;
+      --green:   #22c55e;
+      --blue:    #3b82f6;
+      --yellow:  #eab308;
+      --red:     #ef4444;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Inter", system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    header h1 { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.02em; }
+    header p  { color: var(--muted); margin-top: .3rem; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 720px;
+      margin-bottom: 1rem;
+    }
+    .card h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 1rem; }
+
+    /* Controls */
+    .controls { display: flex; gap: .75rem; flex-wrap: wrap; align-items: flex-end; }
+    .field { display: flex; flex-direction: column; gap: .3rem; flex: 1; min-width: 140px; }
+    .field label { font-size: .75rem; color: var(--muted); }
+    select {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: .45rem .7rem;
+      font-size: .9rem;
+      cursor: pointer;
+    }
+    select:disabled { opacity: .5; cursor: default; }
+
+    #btn-toggle {
+      padding: .6rem 1.4rem;
+      border: none;
+      border-radius: 8px;
+      background: var(--blue);
+      color: #fff;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+      white-space: nowrap;
+      align-self: flex-end;
+    }
+    #btn-toggle:hover  { background: #2563eb; }
+    #btn-toggle.active { background: var(--red); }
+    #btn-toggle.active:hover { background: #dc2626; }
+
+    /* VAD meter */
+    .vad-row { display: flex; align-items: center; gap: 1rem; margin-top: .75rem; }
+    .vad-bar-track {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    #el-prob { height: 100%; width: 0; background: var(--muted); border-radius: 3px; transition: width .08s, background .08s; }
+
+    .state {
+      font-size: .8rem;
+      font-weight: 600;
+      padding: .2rem .6rem;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .state.idle       { background: var(--border);  color: var(--muted); }
+    .state.listening  { background: #1d4ed8;         color: #bfdbfe; }
+    .state.speaking   { background: #15803d;         color: #bbf7d0; }
+    .state.trailing   { background: #713f12;         color: #fef08a; }
+    .state.processing { background: #6d28d9;         color: #ddd6fe; }
+    .state.error      { background: #991b1b;         color: #fecaca; }
+
+    /* Output */
+    .output-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 560px) { .output-grid { grid-template-columns: 1fr; } }
+
+    .output-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      min-height: 80px;
+    }
+    .output-box .label { font-size: .7rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: .5rem; }
+    .output-box .text  { font-size: 1rem; color: var(--text); word-break: break-word; }
+
+    /* Latency */
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    td { padding: .25rem .5rem; }
+    td:last-child { text-align: right; color: var(--muted); }
+    tr:not(:last-child) td { border-bottom: 1px solid var(--border); }
+    tr:last-child { font-weight: 600; }
+
+    /* Log */
+    #el-log {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: .75rem;
+      font-family: monospace;
+      font-size: .78rem;
+      color: var(--muted);
+      white-space: pre-wrap;
+      height: 110px;
+      overflow-y: auto;
+    }
+
+    .pipeline-note {
+      color: var(--muted);
+      font-size: .8rem;
+      text-align: center;
+      margin-top: .5rem;
+    }
+    .pipeline-note span { color: var(--blue); font-weight: 600; }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🎙 MGVaovao</h1>
+  <p>Real-time multilingual → Malagasy speech translation</p>
+</header>
+
+<!-- Controls -->
+<div class="card">
+  <h2>Settings</h2>
+  <div class="controls">
+    <div class="field">
+      <label for="sel-dialect">Target dialect</label>
+      <select id="sel-dialect">
+        <option value="betsileo">Betsileo</option>
+        <option value="betsimisaraka">Betsimisaraka</option>
+        <option value="sakalava">Sakalava</option>
+        <option value="plt_latn">Standard (plt_latn)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="sel-src-lang">Source language</label>
+      <select id="sel-src-lang">
+        <option value="auto">Auto-detect</option>
+        <option value="fr">French</option>
+        <option value="en">English</option>
+        <option value="de">German</option>
+        <option value="es">Spanish</option>
+        <option value="it">Italian</option>
+        <option value="pt">Portuguese</option>
+      </select>
+    </div>
+    <button id="btn-toggle">🎙 Start</button>
+  </div>
+
+  <!-- VAD meter -->
+  <div class="vad-row">
+    <span id="el-state" class="state idle">Stopped</span>
+    <div class="vad-bar-track">
+      <div id="el-prob"></div>
+    </div>
+  </div>
+
+  <p class="pipeline-note">
+    <span>VAD</span> → <span>Whisper ASR</span> → <span>NLLB-200</span> → <span>MMS-TTS</span>
+    &nbsp;|&nbsp; speak naturally — processing triggers automatically on silence
+  </p>
+</div>
+
+<!-- Output -->
+<div class="card">
+  <h2>Output</h2>
+  <div class="output-grid">
+    <div class="output-box">
+      <div class="label">Source transcript</div>
+      <div class="text" id="el-transcript">—</div>
+    </div>
+    <div class="output-box">
+      <div class="label">Malagasy translation</div>
+      <div class="text" id="el-translation">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- Latency -->
+<div class="card">
+  <h2>Latency breakdown</h2>
+  <table id="el-latency">
+    <tr><td colspan="2" style="color:var(--muted);font-size:.8rem;">Waiting for first result…</td></tr>
+  </table>
+</div>
+
+<!-- Log -->
+<div class="card">
+  <h2>Log</h2>
+  <div id="el-log">Ready.</div>
+</div>
+
+<p style="color:var(--muted);font-size:.8rem;margin-top:.5rem;">
+  REST API docs: <a href="/docs" target="_blank">/docs</a> &nbsp;|&nbsp;
+  Gradio UI: <a href="http://localhost:7860" target="_blank">:7860</a>
+</p>
+
+<script src="/live/app.js"></script>
+</body>
+</html>

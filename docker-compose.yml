@@ -1,0 +1,107 @@
+# MGVaovao — GPU-first docker-compose (mirrors Vertex AI / Cloud Run GPU)
+#
+# Usage:
+#   docker-compose up -d api              # start API server  (port 8000)
+#   docker-compose up -d gradio           # start Gradio UI   (port 7860)
+#   docker-compose up -d api gradio       # start both
+#
+#   docker-compose run --rm seed          # seed dataset structure
+#   docker-compose run --rm preprocess    # raw → training-ready splits
+#   docker-compose run --rm train-nllb    # NLLB fine-tuning
+#   docker-compose run --rm train-tts     # TTS fine-tuning
+#   docker-compose run --rm evaluate      # evaluate fine-tuned models
+#
+# CPU-only override (CI / machines without NVIDIA GPU):
+#   docker-compose -f docker-compose.yml -f docker-compose.cpu.yml up -d api
+#
+# Override dialect or Whisper size at runtime:
+#   DIALECT=sakalava docker-compose run --rm train-nllb
+#   MGVAOVAO_WHISPER_MODEL_SIZE=medium docker-compose up api
+
+version: "3.9"
+
+x-base: &base
+  build:
+    context: .
+    dockerfile: Dockerfile.cuda
+  image: mgvaovao:cuda-latest
+  environment:
+    DIALECT: ${DIALECT:-betsileo}
+    MGVAOVAO_DEVICE: ${MGVAOVAO_DEVICE:-cuda}
+    MGVAOVAO_WHISPER_MODEL_SIZE: ${MGVAOVAO_WHISPER_MODEL_SIZE:-small}
+    PYTHONUNBUFFERED: "1"
+    PYTHONIOENCODING: "utf-8"
+  volumes:
+    - ./dataset:/mgvaovao/dataset
+    - ./checkpoints:/mgvaovao/checkpoints
+    - hf_cache:/mgvaovao/.cache/huggingface
+    - torch_cache:/mgvaovao/.cache/torch
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
+
+services:
+
+  # ── API server ────────────────────────────────────────────────────────────
+  api:
+    <<: *base
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  # ── Gradio demo UI (no models — thin API client) ──────────────────────────
+  gradio:
+    <<: *base
+    command: python ui/demo.py
+    environment:
+      MGVAOVAO_API_URL: http://api:8000
+      GRADIO_PORT: "7860"
+    ports:
+      - "7860:7860"
+    depends_on:
+      api:
+        condition: service_healthy
+    deploy:
+      resources: {}   # Gradio needs no GPU
+
+  # ── Training pipeline ─────────────────────────────────────────────────────
+
+  seed:
+    <<: *base
+    command: python -m training.seed --dialect ${DIALECT:-betsileo}
+
+  preprocess-download:
+    <<: *base
+    command: python -m training.preprocess --dialect ${DIALECT:-betsileo} --stage download
+
+  preprocess:
+    <<: *base
+    command: python -m training.preprocess --dialect ${DIALECT:-betsileo}
+
+  train-nllb:
+    <<: *base
+    command: python -m training.train_nllb --dialect ${DIALECT:-betsileo}
+
+  train-tts:
+    <<: *base
+    command: python -m training.train_tts --dialect ${DIALECT:-betsileo}
+
+  evaluate:
+    <<: *base
+    command: python -m training.evaluate --dialect ${DIALECT:-betsileo}
+
+volumes:
+  hf_cache:
+    driver: local
+  torch_cache:
+    driver: local

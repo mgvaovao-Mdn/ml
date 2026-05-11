@@ -1,0 +1,96 @@
+# MGVaovao — Malagasy Translation Pipeline
+# Base: official PyTorch 2.1.2 + CUDA 11.8 (Python 3.10, torch pre-installed)
+#
+# Build:
+#   docker build -t mgvaovao:latest .
+#
+# Run API server:
+#   docker run --gpus all \
+#     -v $PWD/dataset:/mgvaovao/dataset \
+#     -v $PWD/checkpoints:/mgvaovao/checkpoints \
+#     -p 8000:8000 mgvaovao:latest
+#
+# Run Gradio demo (separate container, points to API):
+#   docker run -e MGVAOVAO_API_URL=http://api:8000 -p 7860:7860 mgvaovao:latest \
+#     python ui/demo.py
+
+FROM pytorch/pytorch:2.1.2-cuda11.8-cudnn8-runtime
+
+# ── System packages ──────────────────────────────────────────────────────────
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ffmpeg \
+        libsndfile1 \
+        git \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /mgvaovao
+
+# ── PyTorch ecosystem (torch already in base image) ──────────────────────────
+RUN pip install --no-cache-dir \
+        torchaudio==2.1.2 \
+        --index-url https://download.pytorch.org/whl/cu118
+
+# ── HuggingFace + training stack ─────────────────────────────────────────────
+RUN pip install --no-cache-dir \
+        transformers==4.51.3 \
+        datasets==3.5.0 \
+        evaluate==0.4.3 \
+        accelerate==1.6.0 \
+        huggingface_hub==0.30.2 \
+        peft==0.14.0 \
+        safetensors==0.4.5 \
+        tokenizers==0.21.1
+
+# ── Audio processing ─────────────────────────────────────────────────────────
+RUN pip install --no-cache-dir \
+        openai-whisper \
+        soundfile \
+        librosa \
+        scipy \
+        numpy \
+        pandas
+
+# ── Serving + UI ─────────────────────────────────────────────────────────────
+RUN pip install --no-cache-dir \
+        fastapi==0.115.12 \
+        "uvicorn[standard]==0.34.0" \
+        pydantic-settings==2.9.1 \
+        python-multipart==0.0.20 \
+        requests==2.32.3 \
+        "gradio==4.31.5" \
+        aiofiles==23.2.1 \
+        websockets==12.0 \
+        tqdm
+
+# ── Evaluation metrics ────────────────────────────────────────────────────────
+RUN pip install --no-cache-dir \
+        sacrebleu \
+        jiwer
+
+# ── Project source ────────────────────────────────────────────────────────────
+# dataset/ and checkpoints/ are mounted as volumes — not baked in.
+# HuggingFace and Torch Hub caches are also mounted to avoid re-downloads.
+COPY src/       ./src/
+COPY api/       ./api/
+COPY ui/        ./ui/
+COPY training/  ./training/
+COPY pyproject.toml .
+
+# Install the mgvaovao package in editable mode so imports resolve
+RUN pip install --no-cache-dir -e .
+
+# ── Environment ───────────────────────────────────────────────────────────────
+ENV HF_HOME=/mgvaovao/.cache/huggingface
+ENV TRANSFORMERS_CACHE=/mgvaovao/.cache/huggingface/transformers
+ENV TORCH_HOME=/mgvaovao/.cache/torch
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONIOENCODING=utf-8
+# Point MGVAOVAO settings at the container paths
+ENV MGVAOVAO_ROOT_DIR=/mgvaovao
+ENV MGVAOVAO_CHECKPOINTS_DIR=/mgvaovao/checkpoints
+ENV MGVAOVAO_DATASET_DIR=/mgvaovao/dataset
+ENV MGVAOVAO_HF_CACHE_DIR=/mgvaovao/.cache/huggingface
+ENV MGVAOVAO_TORCH_HUB_DIR=/mgvaovao/.cache/torch/hub
+
+# ── Default: start the API server ────────────────────────────────────────────
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]

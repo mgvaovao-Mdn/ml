@@ -1,0 +1,25 @@
+# CPU-only override — for CI pipelines and machines without NVIDIA GPU.
+#
+# Usage:
+#   docker-compose -f docker-compose.yml -f docker-compose.cpu.yml up -d api
+
+version: "3.9"
+
+x-cpu: &cpu
+  build:
+    context: .
+    dockerfile: Dockerfile
+  image: mgvaovao:cpu-latest
+  environment:
+    MGVAOVAO_DEVICE: cpu
+  deploy:
+    resources: {}
+
+services:
+  api:           { <<: *cpu }
+  gradio:        { <<: *cpu }
+  seed:          { <<: *cpu }
+  preprocess:    { <<: *cpu }
+  train-nllb:    { <<: *cpu }
+  train-tts:     { <<: *cpu }
+  evaluate:      { <<: *cpu }

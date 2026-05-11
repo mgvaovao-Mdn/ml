@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mgvaovao"
+version = "1.0.0"
+description = "Malagasy multilingual audio translation pipeline"
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.1.0",
+    "torchaudio>=2.1.0",
+    "transformers>=4.51.0",
+    "datasets>=2.19.0",
+    "evaluate>=0.4.2",
+    "accelerate>=0.29.0",
+    "peft>=0.10.0",
+    "safetensors>=0.4.3",
+    "tokenizers>=0.19.0",
+    "openai-whisper",
+    "soundfile",
+    "librosa",
+    "scipy",
+    "numpy",
+    "pandas",
+    "sacrebleu",
+    "jiwer",
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.29.0",
+    "pydantic-settings>=2.2.0",
+    "python-multipart>=0.0.9",
+    "requests>=2.31.0",
+    "aiofiles>=23.2.1",
+    "websockets>=12.0",
+    "gradio>=4.31.0",
+    "tqdm",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.scripts]
+mgvaovao-seed        = "mgvaovao.training.seed:main"
+mgvaovao-preprocess  = "mgvaovao.training.preprocess:main"
+mgvaovao-train-nllb  = "mgvaovao.training.train_nllb:main"
+mgvaovao-train-tts   = "mgvaovao.training.train_tts:main"
+mgvaovao-evaluate    = "mgvaovao.training.evaluate:main"
+mgvaovao-serve       = "mgvaovao.api.serve:main"
+mgvaovao-demo        = "ui.demo:main"
