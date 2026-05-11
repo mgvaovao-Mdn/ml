@@ -10,8 +10,26 @@ Run:
 """
 from __future__ import annotations
 import logging
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
+
+# ── Redirect HuggingFace and torch caches BEFORE any library imports ──────────
+# Must happen here so that transformers, torch.hub, datasets all pick up the
+# correct cache root (important when C: is full and caches live on D:).
+def _set_cache_env() -> None:
+    from mgvaovao.core.config import Settings
+    s = Settings()
+    hf = str(s.hf_cache_dir)
+    os.environ.setdefault("HF_HOME", hf)
+    os.environ.setdefault("HUGGINGFACE_HUB_CACHE", str(s.hf_cache_dir / "hub"))
+    os.environ.setdefault("TORCH_HOME", str(s.torch_hub_dir.parent))
+    os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
+    Path(hf).mkdir(parents=True, exist_ok=True)
+    Path(s.torch_hub_dir).mkdir(parents=True, exist_ok=True)
+
+_set_cache_env()
+# ─────────────────────────────────────────────────────────────────────────────
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,16 +47,53 @@ _STATIC_DIR = Path(__file__).parent.parent / "ui" / "static"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    from mgvaovao.core.config import DIALECTS
+    from mgvaovao.core.config import DIALECTS, settings
+    from mgvaovao.models.vad import SileroVAD
+    from mgvaovao.models.asr import WhisperASR
+    from mgvaovao.models.translator import NLLBTranslator
+    from mgvaovao.models.tts import MalagasyTTS
     from mgvaovao.pipeline import MalagasyPipeline
 
-    log.info("Loading pipelines for all dialects…")
+    # ── Load shared models once (saves VRAM — all dialects share the same
+    #    Whisper and NLLB base; only TTS checkpoints differ per dialect) ──────
+    log.info("Loading shared VAD (CPU)…")
+    shared_vad = SileroVAD(
+        threshold=settings.vad_threshold,
+        min_speech_ms=settings.vad_min_speech_ms,
+        min_silence_ms=settings.vad_min_silence_ms,
+        speech_pad_ms=settings.vad_speech_pad_ms,
+    )
+
+    log.info(f"Loading shared Whisper ({settings.whisper_model_size}) on {settings.device}…")
+    shared_asr = WhisperASR()
+
+    log.info(f"Loading shared NLLB on {settings.device}…")
+    shared_translator = NLLBTranslator("plt_latn")
+
+    # ── Per-dialect TTS: reuse base model when no fine-tuned checkpoint exists
     app.state.pipelines: dict[str, MalagasyPipeline] = {}
+    _loaded_tts: dict[str, MalagasyTTS] = {}
 
     for dialect in DIALECTS:
-        log.info(f"  Loading [{dialect}]…")
-        app.state.pipelines[dialect] = MalagasyPipeline(dialect)
-        log.info(f"  [{dialect}] ready")
+        ckpt = settings.tts_checkpoint(dialect) / "final"
+        if ckpt.is_dir():
+            log.info(f"  TTS [{dialect}] — loading fine-tuned checkpoint…")
+            tts = MalagasyTTS(dialect)
+        else:
+            if "base" not in _loaded_tts:
+                log.info("  TTS [base] — loading facebook/mms-tts-mlg…")
+                _loaded_tts["base"] = MalagasyTTS("plt_latn")
+            tts = _loaded_tts["base"]
+            log.info(f"  TTS [{dialect}] — sharing base model (no checkpoint yet)")
+
+        app.state.pipelines[dialect] = MalagasyPipeline(
+            dialect,
+            vad=shared_vad,
+            asr=shared_asr,
+            translator=shared_translator,
+            tts=tts,
+        )
+        log.info(f"  Pipeline [{dialect}] ready")
 
     log.info("All pipelines loaded — API is ready.")
     yield

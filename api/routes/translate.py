@@ -14,7 +14,8 @@ import tempfile
 import numpy as np
 import torchaudio
 import torchaudio.functional as AF
-from fastapi import APIRouter, Form, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Form, File, HTTPException, Query, Request, UploadFile
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse
 
 from mgvaovao.core.schemas import (
@@ -76,13 +77,13 @@ def _latency(result: PipelineResult) -> LatencyBreakdown:
 async def translate_audio(
     request:  Request,
     file:     UploadFile = File(..., description="Audio file (WAV, MP3, OGG, FLAC…)"),
-    dialect:  str        = Form("betsileo"),
-    src_lang: str | None = Form(None, description="Force source lang (auto-detect if omitted)"),
+    dialect:  str        = Form("betsileo", description="Target dialect key"),
+    src_lang: str | None = Form(None,       description="Force source lang (fr/en/de/es/it/pt; auto-detect if omitted)"),
 ):
     pipeline   = _get_pipeline(request, dialect)
     raw        = await file.read()
-    audio, sr  = _audio_from_bytes(raw)
-    result     = pipeline.run_audio(audio, sr, src_lang)
+    audio, sr  = await run_in_threadpool(_audio_from_bytes, raw)
+    result     = await run_in_threadpool(pipeline.run_audio, audio, sr, src_lang)
 
     return TranslateAudioResponse(
         source_text=result.source_text,

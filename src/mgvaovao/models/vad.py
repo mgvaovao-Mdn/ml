@@ -30,6 +30,9 @@ class SileroVAD:
         self.min_silence_ms = min_silence_ms
         self.speech_pad_ms  = speech_pad_ms
 
+        from ..core.config import settings
+        torch.hub.set_dir(str(settings.torch_hub_dir))
+
         self._model, utils = torch.hub.load(
             "snakers4/silero-vad",
             "silero_vad",

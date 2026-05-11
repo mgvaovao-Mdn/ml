@@ -30,7 +30,8 @@ class WhisperASR:
             _device = "cpu"
 
         self.device = _device
-        self.model  = whisper.load_model(_size, device=_device)
+        whisper_cache = str(settings.hf_cache_dir / "whisper")
+        self.model  = whisper.load_model(_size, device=_device, download_root=whisper_cache)
 
     def transcribe(
         self,

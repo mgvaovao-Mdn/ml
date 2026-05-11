@@ -39,20 +39,30 @@ class MalagasyPipeline:
     """
     Stateful pipeline for one dialect.  Instantiate once, call many times.
     Thread-safety: models are inference-only (no shared mutable state).
+
+    Pass pre-built model objects to share GPU memory across dialect pipelines.
+    Any argument left as None will be constructed here (standalone use).
     """
 
-    def __init__(self, dialect: str):
+    def __init__(
+        self,
+        dialect: str,
+        vad: SileroVAD | None = None,
+        asr: WhisperASR | None = None,
+        translator: NLLBTranslator | None = None,
+        tts: MalagasyTTS | None = None,
+    ):
         from .core.config import settings
         self.dialect    = dialect
-        self.vad        = SileroVAD(
+        self.vad        = vad or SileroVAD(
             threshold=settings.vad_threshold,
             min_speech_ms=settings.vad_min_speech_ms,
             min_silence_ms=settings.vad_min_silence_ms,
             speech_pad_ms=settings.vad_speech_pad_ms,
         )
-        self.asr        = WhisperASR()
-        self.translator = NLLBTranslator(dialect)
-        self.tts        = MalagasyTTS(dialect)
+        self.asr        = asr or WhisperASR()
+        self.translator = translator or NLLBTranslator(dialect)
+        self.tts        = tts or MalagasyTTS(dialect)
 
     # ── public API ────────────────────────────────────────────────────────
 

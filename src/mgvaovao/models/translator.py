@@ -45,7 +45,7 @@ class NLLBTranslator:
 
         # Base model is always NLLB-200; LoRA adapters are applied on top
         base = AutoModelForSeq2SeqLM.from_pretrained(
-            base_name, torch_dtype=dtype, low_cpu_mem_usage=True
+            base_name, dtype=dtype, low_cpu_mem_usage=True
         )
         if ckpt_final.is_dir() and (ckpt_final / "adapter_config.json").is_file():
             from peft import PeftModel
