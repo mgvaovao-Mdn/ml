@@ -53,3 +53,9 @@ eval_audio/
 
 # Claude Code internal files
 .claude/
+
+# Temp / artifact files
+null
+server.err
+~$*.xlsx
+~$*.docx
