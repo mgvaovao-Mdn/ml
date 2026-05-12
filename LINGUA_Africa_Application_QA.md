@@ -333,14 +333,15 @@ Fichier Excel séparé : `LINGUA_Africa_Budget_Detaille.xlsx` (à téléverser s
 
 | Catégorie de coût | Montant (USD) |
 |---|---|
-| 1. Personnel | 178 500 |
-| 2. Équipement et matériel | 8 000 |
-| 3. Déplacements et terrain | 16 000 |
-| 4. Formation et ateliers | 4 500 |
-| 5. Communication et documentation | 1 500 |
-| 6. Autres coûts directs | 1 000 |
+| 1. Personnel | 167 300 |
+| 2. Équipement et logiciels | 8 000 |
+| 3. Collecte et traitement de données | 11 200 |
+| 4. Déplacements et terrain | 16 000 |
+| 5. Ateliers, réunions et formation | 4 500 |
+| 6. Communication et sensibilisation | 1 500 |
+| 7. Autres coûts directs | 1 000 |
 | **Total des coûts directs** | **209 500** |
-| 7. Frais généraux / Coûts indirects (5 %) | 10 500 |
+| 8. Frais généraux / Coûts indirects (5 %) | 10 500 |
 | **Grand Total** | **220 000** |
 
 ---
@@ -349,15 +350,17 @@ Fichier Excel séparé : `LINGUA_Africa_Budget_Detaille.xlsx` (à téléverser s
 
 Le budget proposé de 220 000 USD reflète fidèlement les activités planifiées et les coûts réels du contexte malgache, en restant bien en dessous du plafond de 250 000 USD prévu pour la Catégorie 3.
 
-Le poste personnel (178 500 USD) représente la part la plus importante et couvre l'intégralité de l'équipe sur dix-huit mois. Il se décompose comme suit : le fondateur en conseil stratégique à mi-temps sur 18 mois (1 250 USD × 18 = 22 500 USD), la directrice locale à temps plein (2 000 USD × 18 = 36 000 USD), le Chef de projet technique ML (1 800 USD × 18 = 32 400 USD), la Chef de projet Data et Opérations (1 800 USD × 18 = 32 400 USD), un troisième chef de projet pour les partenariats et l'impact démarrant au mois 7 sur 12 mois (1 800 USD × 12 = 21 600 USD), deux développeurs IA juniors (800 USD × 18 = 14 400 USD et 800 USD × 10 = 8 000 USD) et quatorze coordinateurs locaux terrain rémunérés 100 USD par mois sur 8 mois actifs de collecte (14 × 100 × 8 = 11 200 USD). Ces rémunérations sont équitables par rapport aux standards locaux tout en reflétant le niveau d'expertise requis.
+Le poste personnel (167 300 USD) représente la part la plus importante et couvre l'intégralité de l'équipe permanente sur dix-huit mois : le fondateur en conseil stratégique à mi-temps (1 250 USD × 18 = 22 500 USD), la directrice locale à temps plein (2 000 USD × 18 = 36 000 USD), le Chef de projet technique ML (1 800 USD × 18 = 32 400 USD), la Chef de projet Data et Opérations (1 800 USD × 18 = 32 400 USD), un troisième chef de projet pour les partenariats et l'impact démarrant au mois 7 sur 12 mois (1 800 USD × 12 = 21 600 USD) et deux développeurs IA juniors (800 USD × 18 = 14 400 USD et 800 USD × 10 = 8 000 USD).
 
-Le poste équipement (8 000 USD) couvre six ordinateurs portables pour l'équipe technique, quatorze tablettes de terrain à 150 USD l'unité, quatorze microphones de collecte à 50 USD l'unité, ainsi que du matériel de connectivité.
+Le poste collecte et traitement de données (11 200 USD) couvre la rémunération de quatorze coordinateurs locaux terrain, recrutés au sein des communautés locutrices, à 100 USD par mois sur 8 mois actifs de collecte (14 × 100 × 8 = 11 200 USD). Ces rémunérations sont équitables par rapport aux standards locaux.
+
+Le poste équipement et logiciels (8 000 USD) couvre six ordinateurs portables pour l'équipe technique, quatorze tablettes de terrain à 150 USD l'unité, quatorze microphones de collecte à 50 USD l'unité, ainsi que du matériel de connectivité.
 
 Le poste déplacements et terrain (16 000 USD) couvre les missions dans quatorze régions dispersées sur l'ensemble de l'île, les per diem, hébergements et locations de salles de collecte.
 
 Les ateliers (4 500 USD) financent la formation des coordinateurs locaux, un atelier de restitution final et la participation à une conférence régionale. Les frais généraux sont limités à 5 % (10 500 USD), reflétant la structure légère de l'organisation.
 
-*(~295 mots)*
+*(~290 mots)*
 
 ---
 

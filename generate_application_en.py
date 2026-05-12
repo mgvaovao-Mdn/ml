@@ -720,15 +720,16 @@ h1(doc, "Budget — Question 17")
 
 qlabel(doc, "Question 17(b) — Summary Budget Table")
 btable(doc, [
-    ("1. Personnel",                             "178,500"),
-    ("2. Equipment and materials",                 "8,000"),
-    ("3. Travel and field activities",            "16,000"),
-    ("4. Training and workshops",                  "4,500"),
-    ("5. Communication and documentation",         "1,500"),
-    ("6. Other direct costs",                      "1,000"),
-    ("Total Direct Costs",                       "209,500"),
-    ("7. Overhead / Indirect Costs (5%)",         "10,500"),
-    ("Grand Total",                              "220,000"),
+    ("1. Personnel",                               "167,300"),
+    ("2. Equipment and software",                    "8,000"),
+    ("3. Data collection and processing",           "11,200"),
+    ("4. Travel and field activities",              "16,000"),
+    ("5. Workshops, meetings and training",          "4,500"),
+    ("6. Communications and outreach",               "1,500"),
+    ("7. Other direct costs",                        "1,000"),
+    ("Total Direct Costs",                         "209,500"),
+    ("8. Overhead / Indirect Costs (5%)",          "10,500"),
+    ("Grand Total",                               "220,000"),
 ])
 
 doc.add_paragraph()
@@ -737,24 +738,25 @@ para(doc,
     "The proposed budget of USD 220,000 faithfully reflects the planned activities and the "
     "real cost structure of the Malagasy context, remaining well below the USD 250,000 ceiling "
     "for Category 3.\n\n"
-    "Personnel (USD 178,500) covers the full team over eighteen months: the founder in "
-    "strategic advisory at 50% (1,250 × 18 = 22,500); the local director full-time "
+    "Personnel (USD 167,300) covers the core permanent team over eighteen months: the founder "
+    "in strategic advisory at 50% (1,250 × 18 = 22,500); the local director full-time "
     "(2,000 × 18 = 36,000); the Technical ML Project Lead (1,800 × 18 = 32,400); the Data "
     "Operations Project Lead (1,800 × 18 = 32,400); a third project lead starting month 7 "
-    "(1,800 × 12 = 21,600); two junior AI developers (14,400 + 8,000); and fourteen local "
-    "field coordinators at USD 100 per person per month over 8 active months "
-    "(14 × 100 × 8 = 11,200). Rates are fair relative to local standards while reflecting "
-    "the level of expertise required.\n\n"
-    "Equipment (USD 8,000) covers six laptops for the local technical team, fourteen field "
-    "tablets at USD 150 each, fourteen collection microphones at USD 50 each, and "
+    "(1,800 × 12 = 21,600); and two junior AI developers (14,400 + 8,000).\n\n"
+    "Data collection and processing (USD 11,200) covers fourteen local field coordinators "
+    "recruited from within the speaker communities, at USD 100 per person per month over "
+    "8 active collection months (14 × 100 × 8 = 11,200). Rates are fair relative to local "
+    "standards.\n\n"
+    "Equipment and software (USD 8,000) covers six laptops for the technical team, fourteen "
+    "field tablets at USD 150 each, fourteen collection microphones at USD 50 each, and "
     "connectivity hardware.\n\n"
     "Travel and field activities (USD 16,000) cover missions to fourteen geographically "
     "dispersed regions across the island, per diem, accommodation, and room rental.\n\n"
     "Workshops and training (USD 4,500) fund local coordinator training, a final dissemination "
     "workshop, and participation in a regional conference. Overhead is capped at 5% "
     "(USD 10,500), reflecting the organisation's lean structure. Frugality is a design "
-    "principle throughout: the monthly operational cost in production steady-state is "
-    "approximately USD 42, ensuring service sustainability long after the funded period.")
+    "principle: the monthly operational cost in production is approximately USD 42, ensuring "
+    "service sustainability long after the funded period.")
 
 doc.add_page_break()
 

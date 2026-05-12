@@ -144,13 +144,14 @@ ws0.row_dimensions[12].height = 20
 ws0.row_dimensions[13].height = 20
 ws0.row_dimensions[14].height = 20
 ws0.row_dimensions[15].height = 20
-ws0.row_dimensions[16].height = 14
-ws0.row_dimensions[17].height = 28
+ws0.row_dimensions[16].height = 20
+ws0.row_dimensions[17].height = 14
 ws0.row_dimensions[18].height = 28
 ws0.row_dimensions[19].height = 28
-ws0.row_dimensions[20].height = 14
-ws0.row_dimensions[21].height = 22
+ws0.row_dimensions[20].height = 28
+ws0.row_dimensions[21].height = 14
 ws0.row_dimensions[22].height = 22
+ws0.row_dimensions[23].height = 22
 
 c = _cover(ws0, 2, 2, "LINGUA AFRICA 2026", bold=True, size=22,
            color=NAVY, align="left", merge_to=5)
@@ -169,12 +170,13 @@ _cover(ws0, 7, 3, "USD  |  1 USD = 4 500 MGA  |  Durée : 18 mois",
 
 # Tableau des totaux clés
 for r, label, amt, note, bg in [
-    (9,  "Personnel (salaires équipe)",     178500, "85.2 % des coûts directs", BLUE_LIGHT),
-    (10, "Équipement et matériel",            8000, "3.8 % des coûts directs",  OFFWHITE),
-    (11, "Déplacements et terrain",          16000, "7.6 % des coûts directs",  BLUE_LIGHT),
-    (12, "Formation et ateliers",             4500, "2.1 % des coûts directs",  OFFWHITE),
-    (13, "Communication et documentation",   1500, "0.7 % des coûts directs",  BLUE_LIGHT),
-    (14, "Autres coûts directs",              1000, "0.5 % des coûts directs",  OFFWHITE),
+    (9,  "Personnel (salaires équipe)",              167300, "79.9 % des coûts directs", BLUE_LIGHT),
+    (10, "Équipement et logiciels",                    8000, " 3.8 % des coûts directs", OFFWHITE),
+    (11, "Collecte et traitement de données",          11200, " 5.3 % des coûts directs", BLUE_LIGHT),
+    (12, "Déplacements et terrain",                   16000, " 7.6 % des coûts directs", OFFWHITE),
+    (13, "Formation et ateliers",                      4500, " 2.1 % des coûts directs", BLUE_LIGHT),
+    (14, "Communication et documentation",             1500, " 0.7 % des coûts directs", OFFWHITE),
+    (15, "Autres coûts directs",                       1000, " 0.5 % des coûts directs", BLUE_LIGHT),
 ]:
     _cover(ws0, r, 2, label, size=10, bg=bg)
     c = ws0.cell(row=r, column=3, value=amt)
@@ -185,10 +187,10 @@ for r, label, amt, note, bg in [
     _cover(ws0, r, 4, note, size=9, color="555555", italic=True, bg=bg,
            merge_to=5)
 
-for r in range(9, 15):
+for r in range(9, 16):
     ws0.row_dimensions[r].height = 20
 
-r = 15
+r = 16
 for col, val, fmt, bold, align in [
     (2, "Sous-total coûts directs", None,       True,  "right"),
     (3, 209500,                     '#,##0 "USD"', True, "center"),
@@ -202,9 +204,9 @@ ws0.merge_cells(start_row=r, start_column=4, end_row=r, end_column=5)
 ws0.cell(row=r, column=4).fill = PatternFill("solid", fgColor=BLUE_PALE)
 
 for r, label, amt, bg, txt_color, cap_lbl in [
-    (17, "Frais généraux / indirects (5 %)",  10500,  BLUE_PALE,  BLUE_DARK, "5 % × 209 500"),
-    (18, "BUDGET CASH TOTAL DEMANDÉ",        220000,  GREEN_DARK, WHITE,     "< 250 000 USD ✓"),
-    (19, "Crédits de calcul GCP (Q18)",      150000,  NAVY,       WHITE,     "< 400 000 USD ✓"),
+    (18, "Frais généraux / indirects (5 %)",  10500,  BLUE_PALE,  BLUE_DARK, "5 % × 209 500"),
+    (19, "BUDGET CASH TOTAL DEMANDÉ",        220000,  GREEN_DARK, WHITE,     "< 250 000 USD ✓"),
+    (20, "Crédits de calcul GCP (Q18)",      150000,  NAVY,       WHITE,     "< 400 000 USD ✓"),
 ]:
     sz = 12 if "TOTAL" in label or "GCP" in label else 11
     brd = thick_border if "TOTAL" in label or "GCP" in label else thin_border
@@ -226,11 +228,11 @@ for r, label, amt, bg, txt_color, cap_lbl in [
     cap.alignment = Alignment(horizontal="center", vertical="center")
     cap.border    = brd
 
-_cover(ws0, 21, 2, "Contact :", bold=True, size=10, color="333333")
-_cover(ws0, 21, 3, "Fenitra Ravelomanantsoa — fenitra@google.com",
+_cover(ws0, 22, 2, "Contact :", bold=True, size=10, color="333333")
+_cover(ws0, 22, 3, "Fenitra Ravelomanantsoa — fenitra@google.com",
        size=10, merge_to=5)
-_cover(ws0, 22, 2, "Dépôt GitHub :", bold=True, size=10, color="333333")
-_cover(ws0, 22, 3,
+_cover(ws0, 23, 2, "Dépôt GitHub :", bold=True, size=10, color="333333")
+_cover(ws0, 23, 3,
        "github.com/mgvaovao/ml  |  github.com/mgvaovao/backend_ia",
        size=10, italic=True, color=TEAL, merge_to=5)
 
@@ -297,8 +299,6 @@ personnel = [
      "800 × 18 mois", "mois", 18, 800, 14400),
     ("Développeur IA junior 2 (100 %, M9–M18)",
      "800 × 10 mois", "mois", 10, 800, 8000),
-    ("14 coordinateurs locaux de collecte terrain",
-     "100 × 14 pers. × 8 mois actifs", "pers.×mois", 112, 100, 11200),
 ]
 
 for i, (desc, calc, unite, qty, uc, total) in enumerate(personnel):
@@ -307,11 +307,11 @@ for i, (desc, calc, unite, qty, uc, total) in enumerate(personnel):
     _data_row(ws, row, desc, calc, unite, qty, uc, total, bg)
 
 row += 1
-_subtotal(ws, row, "Sous-total Personnel", 178500, NCOLS)
+_subtotal(ws, row, "Sous-total Personnel", 167300, NCOLS)
 
 # ── SECTION 2 : ÉQUIPEMENT ────────────────────────────────────────────────
 row += 1
-_section_hdr(ws, row, "2. ÉQUIPEMENT ET MATÉRIEL", NCOLS)
+_section_hdr(ws, row, "2. ÉQUIPEMENT ET LOGICIELS", NCOLS)
 
 equipment = [
     ("Ordinateurs portables — équipe technique locale (hors fondateur à Zurich)",
@@ -330,11 +330,28 @@ for i, (desc, calc, unite, qty, uc, total) in enumerate(equipment):
     _data_row(ws, row, desc, calc, unite, qty, uc, total, bg)
 
 row += 1
-_subtotal(ws, row, "Sous-total Équipement", 8000, NCOLS)
+_subtotal(ws, row, "Sous-total Équipement et logiciels", 8000, NCOLS)
 
-# ── SECTION 3 : DÉPLACEMENTS ──────────────────────────────────────────────
+# ── SECTION 3 : COLLECTE ET TRAITEMENT DE DONNÉES ─────────────────────────
 row += 1
-_section_hdr(ws, row, "3. DÉPLACEMENTS ET TERRAIN", NCOLS)
+_section_hdr(ws, row, "3. COLLECTE ET TRAITEMENT DE DONNÉES", NCOLS)
+
+collecte = [
+    ("14 coordinateurs locaux de collecte terrain",
+     "100 × 14 pers. × 8 mois actifs", "pers.×mois", 112, 100, 11200),
+]
+
+for i, (desc, calc, unite, qty, uc, total) in enumerate(collecte):
+    row += 1
+    bg = ALT[i % 2]
+    _data_row(ws, row, desc, calc, unite, qty, uc, total, bg)
+
+row += 1
+_subtotal(ws, row, "Sous-total Collecte et traitement de données", 11200, NCOLS)
+
+# ── SECTION 4 : DÉPLACEMENTS ──────────────────────────────────────────────
+row += 1
+_section_hdr(ws, row, "4. DÉPLACEMENTS ET TERRAIN", NCOLS)
 
 travel = [
     ("Missions régionales — avions intérieurs + taxi-brousse (14 régions, 2 visites)",
@@ -359,9 +376,9 @@ for i, (desc, calc, unite, qty, uc, total) in enumerate(travel):
 row += 1
 _subtotal(ws, row, "Sous-total Déplacements & terrain", 16000, NCOLS)
 
-# ── SECTION 4 : FORMATION ─────────────────────────────────────────────────
+# ── SECTION 5 : FORMATION ─────────────────────────────────────────────────
 row += 1
-_section_hdr(ws, row, "4. FORMATION ET ATELIERS", NCOLS)
+_section_hdr(ws, row, "5. FORMATION ET ATELIERS", NCOLS)
 
 workshops = [
     ("Formation des 14 coordinateurs locaux (protocoles, outils d'enregistrement)",
@@ -380,9 +397,9 @@ for i, (desc, calc, unite, qty, uc, total) in enumerate(workshops):
 row += 1
 _subtotal(ws, row, "Sous-total Formation & ateliers", 4500, NCOLS)
 
-# ── SECTION 5 : COMMUNICATION ─────────────────────────────────────────────
+# ── SECTION 6 : COMMUNICATION ─────────────────────────────────────────────
 row += 1
-_section_hdr(ws, row, "5. COMMUNICATION ET DOCUMENTATION", NCOLS)
+_section_hdr(ws, row, "6. COMMUNICATION ET DOCUMENTATION", NCOLS)
 
 comms = [
     ("Rapports d'avancement semestriels (mise en page, traduction FR/EN)",
@@ -399,9 +416,9 @@ for i, (desc, calc, unite, qty, uc, total) in enumerate(comms):
 row += 1
 _subtotal(ws, row, "Sous-total Communication", 1500, NCOLS)
 
-# ── SECTION 6 : AUTRES ────────────────────────────────────────────────────
+# ── SECTION 7 : AUTRES ────────────────────────────────────────────────────
 row += 1
-_section_hdr(ws, row, "6. AUTRES COÛTS DIRECTS", NCOLS)
+_section_hdr(ws, row, "7. AUTRES COÛTS DIRECTS", NCOLS)
 
 others = [
     ("Frais administratifs et juridiques (contrats, enregistrements officiels)",
@@ -488,7 +505,7 @@ ws.row_dimensions[row].height = 28
 # ── SECTION GCP ───────────────────────────────────────────────────────────
 row += 2
 _section_hdr(ws, row,
-    "7. RESSOURCES DE CALCUL GCP — Q18  (crédits séparés du budget cash — plafond 400 000 USD)",
+    "8. RESSOURCES DE CALCUL GCP — Q18  (crédits séparés du budget cash — plafond 400 000 USD)",
     NCOLS, color=NAVY)
 
 gcp = [
@@ -574,17 +591,19 @@ for col, h in enumerate(["Catégorie de coût", "Montant (USD)",
 ws2.row_dimensions[3].height = 22
 
 summary = [
-    ("1. Personnel",                           178500, "85.2 %",
-     "Équipe complète 18 mois — 8 postes + 14 coordinateurs"),
-    ("2. Équipement et matériel",                8000, " 3.8 %",
+    ("1. Personnel",                           167300, "79.9 %",
+     "Équipe permanente 18 mois — 7 postes"),
+    ("2. Équipement et logiciels",               8000, " 3.8 %",
      "Laptops, tablettes, micros, connectivité"),
-    ("3. Déplacements et terrain",              16000, " 7.6 %",
+    ("3. Collecte et traitement de données",    11200, " 5.3 %",
+     "14 coordinateurs locaux terrain × 8 mois × 100 USD"),
+    ("4. Déplacements et terrain",              16000, " 7.6 %",
      "14 régions × 2 missions — avion + taxi-brousse"),
-    ("4. Formation et ateliers",                 4500, " 2.1 %",
+    ("5. Formation et ateliers",                 4500, " 2.1 %",
      "Formation coordinateurs + atelier restitution + conférence"),
-    ("5. Communication et documentation",        1500, " 0.7 %",
+    ("6. Communication et documentation",        1500, " 0.7 %",
      "Rapports, outils numériques"),
-    ("6. Autres coûts directs",                  1000, " 0.5 %",
+    ("7. Autres coûts directs",                  1000, " 0.5 %",
      "Frais administratifs + réserve imprévus"),
 ]
 
