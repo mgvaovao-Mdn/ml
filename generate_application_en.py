@@ -720,44 +720,38 @@ h1(doc, "Budget — Question 17")
 
 qlabel(doc, "Question 17(b) — Summary Budget Table")
 btable(doc, [
-    ("1. Personnel — permanent leadership (5 positions)",           "144,900"),
-    ("2. Equipment and software",                                     "8,000"),
-    ("3. Field collection — 54 collectors × USD 133 × 4 months",    "28,728"),
-    ("4. Annotation & ground truth — 36 annotators × USD 200 × 4 months", "28,800"),
-    ("5. Travel and field activities",                               "16,000"),
-    ("6. Workshops, meetings and training",                           "4,500"),
-    ("7. Communications and outreach",                                "1,500"),
-    ("8. Other direct costs",                                         "1,000"),
-    ("Total Direct Costs",                                         "233,428"),
-    ("9. Overhead / Indirect Costs (5%)",                           "11,671"),
-    ("Grand Total",                                                "245,099"),
+    ("1. Personnel — leadership + technical team (13 positions)",    "192,852"),
+    ("2. Equipment and software",                                      "8,000"),
+    ("3. Field collection — 20 collectors × USD 133 × 4 months",     "10,640"),
+    ("4. Annotation & ground truth — 9 annotators × USD 133 × 3 months", "3,591"),
+    ("5. Travel and field activities",                                "16,000"),
+    ("6. Workshops, meetings and training",                            "4,500"),
+    ("7. Communications and outreach",                                 "1,500"),
+    ("8. Other direct costs",                                          "1,000"),
+    ("Total Direct Costs",                                          "238,083"),
+    ("9. Overhead / Indirect Costs (5%)",                            "11,904"),
+    ("Grand Total",                                                 "249,987"),
 ])
-para(doc,
-    "Organisation co-financing (outside LINGUA Africa budget): 8 developers "
-    "(backend, frontend, AI, data science, DevOps) × USD 333 (1,500,000 MGA) × 18 months "
-    "= USD 47,952.")
 
 doc.add_paragraph()
 qlabel(doc, "Question 17(c) — Budget Justification (300-word limit)")
 para(doc,
-    "The proposed budget of USD 245,099 faithfully reflects the planned activities and the "
+    "The proposed budget of USD 249,987 faithfully reflects the planned activities and the "
     "real cost structure of the Malagasy context, remaining below the USD 250,000 ceiling "
     "for Category 3.\n\n"
-    "Personnel (USD 144,900) covers the permanent leadership team over eighteen months: "
-    "the founder in strategic advisory at 50% (22,500); the local director full-time "
-    "(36,000); the Technical ML Project Lead (32,400); the Data Operations Project Lead "
-    "(32,400); and a partnerships project lead starting month 7 (21,600). The technical "
-    "team of eight developers — backend, frontend, AI, data science, DevOps — constitutes "
-    "an organisation co-financing contribution of USD 47,952 (1,500,000 MGA per developer "
-    "per month × 18 months), not included in the LINGUA Africa request.\n\n"
-    "Field collection (USD 28,728) pays 54 field collectors — three per dialect across "
-    "eighteen dialects — at USD 133/month (600,000 MGA) over four active collection months.\n\n"
-    "Annotation and ground truth (USD 28,800) pays 36 transcription annotators — two per "
-    "dialect — at USD 200/month (900,000 MGA) over four active processing months.\n\n"
+    "Personnel (USD 192,852) covers 13 positions over eighteen months: the five permanent "
+    "leadership team members (founder at 50%, local director, Technical ML Project Lead, "
+    "Data Operations Project Lead, and partnerships project lead starting month 7), plus "
+    "eight developers — backend, frontend, AI, data science, DevOps — paid at 1,500,000 MGA "
+    "per month (USD 333 each), fully included in the LINGUA Africa budget.\n\n"
+    "Field collection (USD 10,640) pays 20 field collectors at USD 133/month (600,000 MGA) "
+    "over four active collection months (20 × 133 × 4 = USD 10,640).\n\n"
+    "Annotation and ground truth (USD 3,591) pays 9 transcription annotators at USD 133/month "
+    "(600,000 MGA) over three active processing months (9 × 133 × 3 = USD 3,591).\n\n"
     "Equipment and software (USD 8,000) covers six laptops and field recording hardware. "
     "Travel (USD 16,000) covers eighteen dialect regions. Workshops (USD 4,500) fund field "
     "team training, a final dissemination event, and a regional conference. Overhead is "
-    "capped at 5% (USD 11,671).")
+    "capped at 5% (USD 11,904).")
 
 doc.add_page_break()
 

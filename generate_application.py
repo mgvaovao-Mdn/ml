@@ -736,44 +736,39 @@ h1(doc, "Budget — Question 17")
 
 qlabel(doc, "Question 17(b) — Tableau récapitulatif du budget")
 btable(doc, [
-    ("1. Personnel — direction permanente (5 postes)",              "144 900"),
-    ("2. Équipement et logiciels",                                    "8 000"),
-    ("3. Collecte terrain — 54 collecteurs × 133 USD × 4 mois",     "28 728"),
-    ("4. Annotation ground truth — 36 annotateurs × 200 USD × 4 mois", "28 800"),
-    ("5. Déplacements et terrain",                                   "16 000"),
-    ("6. Ateliers, réunions et formation",                            "4 500"),
-    ("7. Communication et sensibilisation",                           "1 500"),
-    ("8. Autres coûts directs",                                       "1 000"),
-    ("Total des coûts directs",                                    "233 428"),
-    ("9. Frais généraux / Coûts indirects (5 %)",                   "11 671"),
-    ("Grand Total",                                                "245 099"),
+    ("1. Personnel — direction + équipe technique (13 postes)",      "192 852"),
+    ("2. Équipement et logiciels",                                     "8 000"),
+    ("3. Collecte terrain — 20 collecteurs × 133 USD × 4 mois",      "10 640"),
+    ("4. Annotation et vérification — 9 annotateurs × 133 USD × 3 mois", "3 591"),
+    ("5. Déplacements et terrain",                                    "16 000"),
+    ("6. Ateliers, réunions et formation",                             "4 500"),
+    ("7. Communication et sensibilisation",                            "1 500"),
+    ("8. Autres coûts directs",                                        "1 000"),
+    ("Total des coûts directs",                                     "238 083"),
+    ("9. Frais généraux / Coûts indirects (5 %)",                    "11 904"),
+    ("Grand Total",                                                 "249 987"),
 ])
-para(doc,
-    "Co-financement organisation (hors budget LINGUA Africa) : 8 développeurs "
-    "(backend, frontend, IA, data science, DevOps) × 333 USD (1 500 000 MGA) × 18 mois "
-    "= 47 952 USD.")
 
 doc.add_paragraph()
 qlabel(doc, "Question 17(c) — Justification du budget (300 mots max)")
 para(doc,
-    "Le budget proposé de 245 099 USD reflète fidèlement les activités planifiées et les coûts "
+    "Le budget proposé de 249 987 USD reflète fidèlement les activités planifiées et les coûts "
     "réels du contexte malgache, en restant en dessous du plafond de 250 000 USD prévu "
     "pour la Catégorie 3.\n\n"
-    "Le poste personnel (144 900 USD) couvre l'équipe de direction permanente sur dix-huit mois : "
-    "le fondateur en conseil stratégique à mi-temps (22 500 USD), la directrice locale à temps "
-    "plein (36 000 USD), le Chef de projet technique ML (32 400 USD), la Chef de projet Data et "
-    "Opérations (32 400 USD) et un chef de projet partenariats démarrant au mois 7 (21 600 USD). "
-    "L'équipe technique de huit développeurs — backend, frontend, IA, data scientists et DevOps — "
-    "constitue un apport de l'organisation de 47 952 USD (1 500 000 MGA × 18 mois × 8 personnes), "
-    "non inclus dans la demande LINGUA Africa.\n\n"
-    "Le poste collecte terrain (28 728 USD) rémunère 54 collecteurs — trois par dialecte — "
-    "à 133 USD/mois (600 000 MGA) sur quatre mois actifs de collecte intensive.\n\n"
-    "Le poste annotation et vérification (28 800 USD) rémunère 36 annotateurs-transcripteurs "
-    "— deux par dialecte — à 200 USD/mois (900 000 MGA) sur quatre mois de ground truth.\n\n"
+    "Le poste personnel (192 852 USD) couvre 13 postes sur dix-huit mois : les cinq membres de "
+    "la direction permanente (fondateur à mi-temps, directrice locale, chef de projet technique ML, "
+    "chef de projet data et opérations, chef de projet partenariats démarrant au mois 7) et huit "
+    "développeurs — backend, frontend, IA, data scientists et DevOps — rémunérés à 1 500 000 MGA "
+    "par mois (333 USD) chacun, pleinement inclus dans le budget LINGUA Africa.\n\n"
+    "Le poste collecte terrain (10 640 USD) rémunère 20 collecteurs à 133 USD/mois (600 000 MGA) "
+    "sur quatre mois actifs de collecte intensive (20 × 133 × 4 = 10 640 USD).\n\n"
+    "Le poste annotation et vérification (3 591 USD) rémunère 9 annotateurs-transcripteurs "
+    "à 133 USD/mois (600 000 MGA) sur trois mois actifs de ground truth "
+    "(9 × 133 × 3 = 3 591 USD).\n\n"
     "Le poste équipement et logiciels (8 000 USD) couvre six ordinateurs portables et le matériel "
     "d'enregistrement terrain. Les déplacements (16 000 USD) couvrent les dix-huit régions "
     "dialectales. Les ateliers (4 500 USD) financent la formation des équipes terrain, un atelier "
-    "de restitution et une conférence. Les frais généraux sont limités à 5 % (11 671 USD).")
+    "de restitution et une conférence. Les frais généraux sont limités à 5 % (11 904 USD).")
 
 doc.add_page_break()
 
