@@ -63,7 +63,7 @@ def _section_hdr(ws, row, label, ncols, color=BLUE_DARK):
     ws.row_dimensions[row].height = 22
     return c
 
-def _subtotal(ws, row, label, amount, ncols, bg=BLUE_PALE, pct=None, total_ref=209500):
+def _subtotal(ws, row, label, amount, ncols, bg=BLUE_PALE, pct=None, total_ref=233428):
     ws.merge_cells(start_row=row, start_column=1,
                    end_row=row, end_column=ncols - 2)
     c1 = ws.cell(row=row, column=1, value=label)
@@ -170,13 +170,13 @@ _cover(ws0, 7, 3, "USD  |  1 USD = 4 500 MGA  |  Durée : 18 mois",
 
 # Tableau des totaux clés
 for r, label, amt, note, bg in [
-    (9,  "Personnel (salaires équipe)",              167300, "79.9 % des coûts directs", BLUE_LIGHT),
-    (10, "Équipement et logiciels",                    8000, " 3.8 % des coûts directs", OFFWHITE),
-    (11, "Collecte et traitement de données",          11200, " 5.3 % des coûts directs", BLUE_LIGHT),
-    (12, "Déplacements et terrain",                   16000, " 7.6 % des coûts directs", OFFWHITE),
-    (13, "Formation et ateliers",                      4500, " 2.1 % des coûts directs", BLUE_LIGHT),
-    (14, "Communication et documentation",             1500, " 0.7 % des coûts directs", OFFWHITE),
-    (15, "Autres coûts directs",                       1000, " 0.5 % des coûts directs", BLUE_LIGHT),
+    (9,  "Personnel — direction permanente",         144900, "62.1 % des coûts directs", BLUE_LIGHT),
+    (10, "Équipement et logiciels",                    8000, " 3.4 % des coûts directs", OFFWHITE),
+    (11, "Collecte terrain (54 collecteurs)",          28728, "12.3 % des coûts directs", BLUE_LIGHT),
+    (12, "Annotation ground truth (36 annotateurs)",  28800, "12.3 % des coûts directs", OFFWHITE),
+    (13, "Déplacements et terrain",                   16000, " 6.9 % des coûts directs", BLUE_LIGHT),
+    (14, "Formation et ateliers",                      4500, " 1.9 % des coûts directs", OFFWHITE),
+    (15, "Communication et autres coûts",              2500, " 1.1 % des coûts directs", BLUE_LIGHT),
 ]:
     _cover(ws0, r, 2, label, size=10, bg=bg)
     c = ws0.cell(row=r, column=3, value=amt)
@@ -193,7 +193,7 @@ for r in range(9, 16):
 r = 16
 for col, val, fmt, bold, align in [
     (2, "Sous-total coûts directs", None,       True,  "right"),
-    (3, 209500,                     '#,##0 "USD"', True, "center"),
+    (3, 233428,                     '#,##0 "USD"', True, "center"),
 ]:
     c = ws0.cell(row=r, column=col, value=val)
     c.font          = Font(name="Calibri", bold=bold, size=10, color=BLUE_DARK)
@@ -204,8 +204,8 @@ ws0.merge_cells(start_row=r, start_column=4, end_row=r, end_column=5)
 ws0.cell(row=r, column=4).fill = PatternFill("solid", fgColor=BLUE_PALE)
 
 for r, label, amt, bg, txt_color, cap_lbl in [
-    (18, "Frais généraux / indirects (5 %)",  10500,  BLUE_PALE,  BLUE_DARK, "5 % × 209 500"),
-    (19, "BUDGET CASH TOTAL DEMANDÉ",        220000,  GREEN_DARK, WHITE,     "< 250 000 USD ✓"),
+    (18, "Frais généraux / indirects (5 %)",  11671,  BLUE_PALE,  BLUE_DARK, "5 % × 233 428"),
+    (19, "BUDGET CASH TOTAL DEMANDÉ",        245099,  GREEN_DARK, WHITE,     "< 250 000 USD ✓"),
     (20, "Crédits de calcul GCP (Q18)",      150000,  NAVY,       WHITE,     "< 400 000 USD ✓"),
 ]:
     sz = 12 if "TOTAL" in label or "GCP" in label else 11
@@ -295,10 +295,6 @@ personnel = [
      "1 800 × 18 mois", "mois", 18, 1800, 32400),
     ("Chef de projet 3 — Partenariats & impact (recrutement M7, 100 %)",
      "1 800 × 12 mois (M7–M18)", "mois", 12, 1800, 21600),
-    ("Développeur IA junior 1 (100 %)",
-     "800 × 18 mois", "mois", 18, 800, 14400),
-    ("Développeur IA junior 2 (100 %, M9–M18)",
-     "800 × 10 mois", "mois", 10, 800, 8000),
 ]
 
 for i, (desc, calc, unite, qty, uc, total) in enumerate(personnel):
@@ -307,7 +303,20 @@ for i, (desc, calc, unite, qty, uc, total) in enumerate(personnel):
     _data_row(ws, row, desc, calc, unite, qty, uc, total, bg)
 
 row += 1
-_subtotal(ws, row, "Sous-total Personnel", 167300, NCOLS)
+_subtotal(ws, row, "Sous-total Personnel (direction permanente)", 144900, NCOLS)
+
+# Note co-financement développeurs
+row += 1
+ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=NCOLS)
+c = ws.cell(row=row, column=1,
+            value="↳ Co-financement organisation (hors budget LINGUA Africa) : "
+                  "8 développeurs (backend / frontend / IA / data science / DevOps) "
+                  "× 333 USD (1 500 000 MGA) × 18 mois = 47 952 USD")
+c.font      = Font(name="Calibri", size=9, italic=True, color="555555")
+c.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True,
+                        indent=1)
+c.fill      = PatternFill("solid", fgColor=AMBER_LIGHT)
+ws.row_dimensions[row].height = 24
 
 # ── SECTION 2 : ÉQUIPEMENT ────────────────────────────────────────────────
 row += 1
@@ -337,8 +346,9 @@ row += 1
 _section_hdr(ws, row, "3. COLLECTE ET TRAITEMENT DE DONNÉES", NCOLS)
 
 collecte = [
-    ("14 coordinateurs locaux de collecte terrain",
-     "100 × 14 pers. × 8 mois actifs", "pers.×mois", 112, 100, 11200),
+    ("54 collecteurs terrain — 3 par dialecte × 18 dialectes (recrutés dans les communautés, "
+     "priorité aux femmes, rémunération équitable)",
+     "133 USD (600 000 MGA) × 54 pers. × 4 mois actifs", "pers.×mois", 216, 133, 28728),
 ]
 
 for i, (desc, calc, unite, qty, uc, total) in enumerate(collecte):
@@ -347,11 +357,29 @@ for i, (desc, calc, unite, qty, uc, total) in enumerate(collecte):
     _data_row(ws, row, desc, calc, unite, qty, uc, total, bg)
 
 row += 1
-_subtotal(ws, row, "Sous-total Collecte et traitement de données", 11200, NCOLS)
+_subtotal(ws, row, "Sous-total Collecte terrain", 28728, NCOLS)
 
-# ── SECTION 4 : DÉPLACEMENTS ──────────────────────────────────────────────
+# ── SECTION 4 : ANNOTATION ET VÉRIFICATION ────────────────────────────────
 row += 1
-_section_hdr(ws, row, "4. DÉPLACEMENTS ET TERRAIN", NCOLS)
+_section_hdr(ws, row, "4. ANNOTATION ET VÉRIFICATION (GROUND TRUTH)", NCOLS)
+
+annotation = [
+    ("36 annotateurs-transcripteurs — 2 par dialecte × 18 dialectes "
+     "(vérification des transcriptions, alignement phonème-graphème, contrôle qualité)",
+     "200 USD (900 000 MGA) × 36 pers. × 4 mois actifs", "pers.×mois", 144, 200, 28800),
+]
+
+for i, (desc, calc, unite, qty, uc, total) in enumerate(annotation):
+    row += 1
+    bg = ALT[i % 2]
+    _data_row(ws, row, desc, calc, unite, qty, uc, total, bg)
+
+row += 1
+_subtotal(ws, row, "Sous-total Annotation et ground truth", 28800, NCOLS)
+
+# ── SECTION 5 : DÉPLACEMENTS ──────────────────────────────────────────────
+row += 1
+_section_hdr(ws, row, "5. DÉPLACEMENTS ET TERRAIN", NCOLS)
 
 travel = [
     ("Missions régionales — avions intérieurs + taxi-brousse (14 régions, 2 visites)",
@@ -376,9 +404,9 @@ for i, (desc, calc, unite, qty, uc, total) in enumerate(travel):
 row += 1
 _subtotal(ws, row, "Sous-total Déplacements & terrain", 16000, NCOLS)
 
-# ── SECTION 5 : FORMATION ─────────────────────────────────────────────────
+# ── SECTION 6 : FORMATION ─────────────────────────────────────────────────
 row += 1
-_section_hdr(ws, row, "5. FORMATION ET ATELIERS", NCOLS)
+_section_hdr(ws, row, "6. FORMATION ET ATELIERS", NCOLS)
 
 workshops = [
     ("Formation des 14 coordinateurs locaux (protocoles, outils d'enregistrement)",
@@ -397,9 +425,9 @@ for i, (desc, calc, unite, qty, uc, total) in enumerate(workshops):
 row += 1
 _subtotal(ws, row, "Sous-total Formation & ateliers", 4500, NCOLS)
 
-# ── SECTION 6 : COMMUNICATION ─────────────────────────────────────────────
+# ── SECTION 7 : COMMUNICATION ─────────────────────────────────────────────
 row += 1
-_section_hdr(ws, row, "6. COMMUNICATION ET DOCUMENTATION", NCOLS)
+_section_hdr(ws, row, "7. COMMUNICATION ET DOCUMENTATION", NCOLS)
 
 comms = [
     ("Rapports d'avancement semestriels (mise en page, traduction FR/EN)",
@@ -416,9 +444,9 @@ for i, (desc, calc, unite, qty, uc, total) in enumerate(comms):
 row += 1
 _subtotal(ws, row, "Sous-total Communication", 1500, NCOLS)
 
-# ── SECTION 7 : AUTRES ────────────────────────────────────────────────────
+# ── SECTION 8 : AUTRES ────────────────────────────────────────────────────
 row += 1
-_section_hdr(ws, row, "7. AUTRES COÛTS DIRECTS", NCOLS)
+_section_hdr(ws, row, "8. AUTRES COÛTS DIRECTS", NCOLS)
 
 others = [
     ("Frais administratifs et juridiques (contrats, enregistrements officiels)",
@@ -444,7 +472,7 @@ c1.font      = Font(name="Calibri", bold=True, size=11, color=WHITE)
 c1.fill      = PatternFill("solid", fgColor=BLUE_MED)
 c1.alignment = Alignment(horizontal="right", vertical="center")
 c1.border    = thick_border
-c2 = ws.cell(row=row, column=NCOLS - 1, value=209500)
+c2 = ws.cell(row=row, column=NCOLS - 1, value=233428)
 c2.font          = Font(name="Calibri", bold=True, size=11, color=WHITE)
 c2.fill          = PatternFill("solid", fgColor=BLUE_MED)
 c2.alignment     = Alignment(horizontal="center", vertical="center")
@@ -466,14 +494,14 @@ c1.font      = Font(name="Calibri", bold=True, size=10, color=BLUE_DARK)
 c1.fill      = PatternFill("solid", fgColor=BLUE_PALE)
 c1.alignment = Alignment(horizontal="right", vertical="center")
 c1.border    = thin_border
-c2 = ws.cell(row=row, column=NCOLS - 1, value=10500)
+c2 = ws.cell(row=row, column=NCOLS - 1, value=11671)
 c2.font          = Font(name="Calibri", bold=True, size=10, color=BLUE_DARK)
 c2.fill          = PatternFill("solid", fgColor=BLUE_PALE)
 c2.alignment     = Alignment(horizontal="center", vertical="center")
 c2.number_format = '#,##0'
 c2.border        = thin_border
 c3 = ws.cell(row=row, column=NCOLS,
-             value="5 % × 209 500")
+             value="5 % × 233 428")
 c3.font      = Font(name="Calibri", size=9, italic=True, color=BLUE_DARK)
 c3.fill      = PatternFill("solid", fgColor=BLUE_PALE)
 c3.alignment = Alignment(horizontal="center", vertical="center")
@@ -489,7 +517,7 @@ c1.font      = Font(name="Calibri", bold=True, size=12, color=WHITE)
 c1.fill      = PatternFill("solid", fgColor=GREEN_DARK)
 c1.alignment = Alignment(horizontal="right", vertical="center")
 c1.border    = thick_border
-c2 = ws.cell(row=row, column=NCOLS - 1, value=220000)
+c2 = ws.cell(row=row, column=NCOLS - 1, value=245099)
 c2.font          = Font(name="Calibri", bold=True, size=12, color=WHITE)
 c2.fill          = PatternFill("solid", fgColor=GREEN_DARK)
 c2.alignment     = Alignment(horizontal="center", vertical="center")
@@ -505,7 +533,7 @@ ws.row_dimensions[row].height = 28
 # ── SECTION GCP ───────────────────────────────────────────────────────────
 row += 2
 _section_hdr(ws, row,
-    "8. RESSOURCES DE CALCUL GCP — Q18  (crédits séparés du budget cash — plafond 400 000 USD)",
+    "9. RESSOURCES DE CALCUL GCP — Q18  (crédits séparés du budget cash — plafond 400 000 USD)",
     NCOLS, color=NAVY)
 
 gcp = [
@@ -591,19 +619,21 @@ for col, h in enumerate(["Catégorie de coût", "Montant (USD)",
 ws2.row_dimensions[3].height = 22
 
 summary = [
-    ("1. Personnel",                           167300, "79.9 %",
-     "Équipe permanente 18 mois — 7 postes"),
-    ("2. Équipement et logiciels",               8000, " 3.8 %",
-     "Laptops, tablettes, micros, connectivité"),
-    ("3. Collecte et traitement de données",    11200, " 5.3 %",
-     "14 coordinateurs locaux terrain × 8 mois × 100 USD"),
-    ("4. Déplacements et terrain",              16000, " 7.6 %",
-     "14 régions × 2 missions — avion + taxi-brousse"),
-    ("5. Formation et ateliers",                 4500, " 2.1 %",
-     "Formation coordinateurs + atelier restitution + conférence"),
-    ("6. Communication et documentation",        1500, " 0.7 %",
-     "Rapports, outils numériques"),
-    ("7. Autres coûts directs",                  1000, " 0.5 %",
+    ("1. Personnel — direction permanente",    144900, "62.1 %",
+     "5 postes : direction, ML, data ops, partenariats — 18 mois"),
+    ("2. Équipement et logiciels",               8000, " 3.4 %",
+     "Laptops, matériel d'enregistrement terrain, connectivité"),
+    ("3. Collecte terrain",                     28728, "12.3 %",
+     "54 collecteurs × 133 USD/mois × 4 mois — 3 par dialecte × 18"),
+    ("4. Annotation et ground truth",           28800, "12.3 %",
+     "36 annotateurs × 200 USD/mois × 4 mois — 2 par dialecte × 18"),
+    ("5. Déplacements et terrain",              16000, " 6.9 %",
+     "18 régions × 2 missions — avion, per diem, salles"),
+    ("6. Formation et ateliers",                 4500, " 1.9 %",
+     "Formation équipes terrain + atelier restitution + conférence"),
+    ("7. Communication et documentation",        1500, " 0.6 %",
+     "Rapports semestriels, outils numériques"),
+    ("8. Autres coûts directs",                  1000, " 0.4 %",
      "Frais administratifs + réserve imprévus"),
 ]
 
@@ -625,7 +655,7 @@ for i, (cat, amt, pct, note) in enumerate(summary):
 r2 += 1
 for col, val, fmt, bg in [
     (1, "TOTAL DES COÛTS DIRECTS",  None,    BLUE_MED),
-    (2, 209500,                     '#,##0', BLUE_MED),
+    (2, 233428,                     '#,##0', BLUE_MED),
     (3, "100 %",                    None,    BLUE_MED),
     (4, "209 500 USD",              None,    BLUE_MED),
 ]:
@@ -641,9 +671,9 @@ ws2.row_dimensions[r2].height = 22
 r2 += 1
 for col, val, fmt, bg in [
     (1, "Frais généraux / indirects (5 %)",  None,    BLUE_PALE),
-    (2, 10500,                               '#,##0', BLUE_PALE),
+    (2, 11671,                               '#,##0', BLUE_PALE),
     (3, "5 %",                               None,    BLUE_PALE),
-    (4, "5 % × 209 500",                     None,    BLUE_PALE),
+    (4, "5 % × 233 428",                     None,    BLUE_PALE),
 ]:
     c = ws2.cell(row=r2, column=col, value=val)
     c.font      = Font(name="Calibri", bold=True, size=10, color=BLUE_DARK)
@@ -657,7 +687,7 @@ ws2.row_dimensions[r2].height = 20
 r2 += 1
 for col, val, fmt, bg in [
     (1, "GRAND TOTAL — BUDGET CASH DEMANDÉ",  None,    GREEN_DARK),
-    (2, 220000,                               '#,##0', GREEN_DARK),
+    (2, 245099,                               '#,##0', GREEN_DARK),
     (3, "< 250 000 USD ✓",                    None,    GREEN_DARK),
     (4, "Plafond Cat. 3 respecté",            None,    GREEN_DARK),
 ]:

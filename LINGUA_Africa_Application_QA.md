@@ -333,34 +333,35 @@ Fichier Excel séparé : `LINGUA_Africa_Budget_Detaille.xlsx` (à téléverser s
 
 | Catégorie de coût | Montant (USD) |
 |---|---|
-| 1. Personnel | 167 300 |
+| 1. Personnel — direction permanente (5 postes) | 144 900 |
 | 2. Équipement et logiciels | 8 000 |
-| 3. Collecte et traitement de données | 11 200 |
-| 4. Déplacements et terrain | 16 000 |
-| 5. Ateliers, réunions et formation | 4 500 |
-| 6. Communication et sensibilisation | 1 500 |
-| 7. Autres coûts directs | 1 000 |
-| **Total des coûts directs** | **209 500** |
-| 8. Frais généraux / Coûts indirects (5 %) | 10 500 |
-| **Grand Total** | **220 000** |
+| 3. Collecte terrain — 54 collecteurs × 133 USD × 4 mois (600 000 MGA/mois) | 28 728 |
+| 4. Annotation et vérification ground truth — 36 annotateurs × 200 USD × 4 mois (900 000 MGA/mois) | 28 800 |
+| 5. Déplacements et terrain | 16 000 |
+| 6. Ateliers, réunions et formation | 4 500 |
+| 7. Communication et sensibilisation | 1 500 |
+| 8. Autres coûts directs | 1 000 |
+| **Total des coûts directs** | **233 428** |
+| 9. Frais généraux / Coûts indirects (5 %) | 11 671 |
+| **Grand Total** | **245 099** |
+
+*Co-financement organisation (hors budget LINGUA Africa) : 8 développeurs (backend, frontend, IA, data science, DevOps) × 333 USD (1 500 000 MGA) × 18 mois = 47 952 USD.*
 
 ---
 
 ## Question 17(c) — Justification du budget (300 mots max)
 
-Le budget proposé de 220 000 USD reflète fidèlement les activités planifiées et les coûts réels du contexte malgache, en restant bien en dessous du plafond de 250 000 USD prévu pour la Catégorie 3.
+Le budget proposé de 245 099 USD reflète fidèlement les activités planifiées et les coûts réels du contexte malgache, en restant en dessous du plafond de 250 000 USD prévu pour la Catégorie 3.
 
-Le poste personnel (167 300 USD) représente la part la plus importante et couvre l'intégralité de l'équipe permanente sur dix-huit mois : le fondateur en conseil stratégique à mi-temps (1 250 USD × 18 = 22 500 USD), la directrice locale à temps plein (2 000 USD × 18 = 36 000 USD), le Chef de projet technique ML (1 800 USD × 18 = 32 400 USD), la Chef de projet Data et Opérations (1 800 USD × 18 = 32 400 USD), un troisième chef de projet pour les partenariats et l'impact démarrant au mois 7 sur 12 mois (1 800 USD × 12 = 21 600 USD) et deux développeurs IA juniors (800 USD × 18 = 14 400 USD et 800 USD × 10 = 8 000 USD).
+Le poste personnel (144 900 USD) couvre l'équipe de direction permanente sur dix-huit mois : le fondateur en conseil stratégique à mi-temps (1 250 USD × 18 = 22 500 USD), la directrice locale à temps plein (2 000 USD × 18 = 36 000 USD), le Chef de projet technique ML (1 800 USD × 18 = 32 400 USD), la Chef de projet Data et Opérations (1 800 USD × 18 = 32 400 USD) et un chef de projet partenariats démarrant au mois 7 (1 800 USD × 12 = 21 600 USD). L'équipe technique de huit développeurs — backend, frontend, développeurs IA, data scientists et DevOps — constitue un apport complémentaire de l'organisation de 47 952 USD (1 500 000 MGA par développeur par mois × 18 mois), non inclus dans la demande LINGUA Africa.
 
-Le poste collecte et traitement de données (11 200 USD) couvre la rémunération de quatorze coordinateurs locaux terrain, recrutés au sein des communautés locutrices, à 100 USD par mois sur 8 mois actifs de collecte (14 × 100 × 8 = 11 200 USD). Ces rémunérations sont équitables par rapport aux standards locaux.
+Le poste collecte terrain (28 728 USD) rémunère 54 collecteurs — trois par dialecte pour dix-huit dialectes — à 133 USD par mois (600 000 MGA) sur quatre mois actifs de collecte intensive (54 × 133 × 4 = 28 728 USD).
 
-Le poste équipement et logiciels (8 000 USD) couvre six ordinateurs portables pour l'équipe technique, quatorze tablettes de terrain à 150 USD l'unité, quatorze microphones de collecte à 50 USD l'unité, ainsi que du matériel de connectivité.
+Le poste annotation et vérification (28 800 USD) rémunère 36 annotateurs-transcripteurs — deux par dialecte — à 200 USD par mois (900 000 MGA) sur quatre mois actifs de traitement ground truth (36 × 200 × 4 = 28 800 USD).
 
-Le poste déplacements et terrain (16 000 USD) couvre les missions dans quatorze régions dispersées sur l'ensemble de l'île, les per diem, hébergements et locations de salles de collecte.
+Le poste équipement et logiciels (8 000 USD) couvre six ordinateurs portables et le matériel d'enregistrement terrain. Les déplacements (16 000 USD) couvrent les missions dans les dix-huit régions dialectales. Les ateliers (4 500 USD) financent la formation des équipes terrain, un atelier de restitution final et une conférence régionale. Les frais généraux sont limités à 5 % (11 671 USD).
 
-Les ateliers (4 500 USD) financent la formation des coordinateurs locaux, un atelier de restitution final et la participation à une conférence régionale. Les frais généraux sont limités à 5 % (10 500 USD), reflétant la structure légère de l'organisation.
-
-*(~290 mots)*
+*(~275 mots)*
 
 ---
 
