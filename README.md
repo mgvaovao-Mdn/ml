@@ -1170,13 +1170,47 @@ gantt
 
 ## 25. License
 
-Model licenses:
-- **NLLB-200** and **MMS-TTS-MLG**: CC-BY-NC 4.0 — free for non-commercial use (fully compatible with NGO / association use)
-- **Whisper**: Apache 2.0
-- **Silero VAD**: MIT
+### Application code — Apache 2.0
 
-Application code: contact tsanta@mgvaovao.com
+All source code in this repository (API, training scripts, pipeline, UI) is released under the **Apache License 2.0**.
+
+```
+Copyright 2026 Madagasikara Vaovao — MGVaovao Maison du Numérique
+Licensed under the Apache License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0
+```
+
+See [`LICENSE`](LICENSE) for the full text.
+
+### Third-party model weights
+
+The model weights loaded at runtime are **not** included in this repository and carry their own licenses:
+
+| Model | License | Non-commercial restriction |
+|---|---|---|
+| NLLB-200-distilled-600M (Meta) | CC-BY-NC 4.0 | ✅ Free for NGO / research use |
+| MMS-TTS-MLG VITS (Meta) | CC-BY-NC 4.0 | ✅ Free for NGO / research use |
+| Whisper large-v3-turbo (OpenAI) | Apache 2.0 | None |
+| Silero VAD v5 | MIT | None |
+
+**Fine-tuned LoRA adapters** (derived from NLLB) and **dialect TTS checkpoints** (derived from MMS-TTS) produced by this project inherit CC-BY-NC 4.0 and are published under that license. Non-commercial use — including all NGO, academic, and LINGUA Africa grant activities — is fully permitted.
+
+### Collected speech data — CC BY 4.0
+
+All dialectal audio corpora collected and produced under this project are released under **Creative Commons Attribution 4.0 International (CC BY 4.0)**, published on HuggingFace and contributed to Mozilla Common Voice.
+
+### Summary
+
+| Asset | License |
+|---|---|
+| Code (this repository) | **Apache 2.0** |
+| Fine-tuned NLLB LoRA weights | CC-BY-NC 4.0 |
+| Fine-tuned MMS-TTS dialect checkpoints | CC-BY-NC 4.0 |
+| Collected dialectal speech corpora | **CC BY 4.0** |
+| Whisper weights (third-party) | Apache 2.0 |
+| Silero VAD weights (third-party) | MIT |
 
 ---
 
-*MGVaovao — Maison du Numérique · Ambatonakanga, Antananarivo · mgvaovao.com*
+*MGVaovao — Maison du Numérique · Ambatonakanga, Antananarivo · mgvaovao.com*  
+*Supported by LINGUA Africa — Masakhane African Languages Hub · Microsoft AI for Good Lab · Gates Foundation · Google.org*
