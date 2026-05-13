@@ -208,8 +208,8 @@ para(doc,
     "LINGUA Africa support will allow us to extend coverage to the remaining 14 dialects, "
     "build the first open vocal resources for the full Malagasy dialect continuum, and deploy "
     "this service within the education, health, and civic inclusion programmes of MGVaovao - "
-    "Maison du Numérique, a community centre welcoming over 550 people per month that has "
-    "trained more than 5,000 individuals since its inauguration in February 2024.")
+    "Maison du Numérique, a community centre that has reached over 5,500 unique beneficiaries "
+    "and accompanied 2,366 certified people since its inauguration in February 2024.")
 
 # ── Q2 ────────────────────────────────────────────────────────────────────────
 qlabel(doc, "Question 2 — Rationale and Objectives (750-word limit)")
@@ -244,13 +244,15 @@ para(doc,
     "rigour, within a community framework, and under fully open licences.\n\n"
     "The direct beneficiaries are the speakers of under-represented Malagasy dialects, a "
     "population estimated at over fifteen million people. Among Maison du Numérique's active "
-    "programmes is a dedicated digital inclusion initiative for children with Down syndrome "
-    "(trisomy 21) — a concrete demonstration that the organisation's mission extends to every "
-    "form of exclusion, including disability.\n\n"
+    "programmes are a digital inclusion initiative for children with Down syndrome (trisomy 21) "
+    "— 28 children accompanied across three cohorts in partnership with Down Syndrome Madagascar "
+    "— and the Ampela Online programme for women's entrepreneurship, concrete demonstrations "
+    "that the organisation's mission extends to every form of exclusion.\n\n"
     "The team carrying this project is deeply locally rooted and technically capable at an "
     "international level. Fenitra Ravelomanantsoa, founder of Madagasikara Vaovao, is Head of "
-    "Cloud Regulatory (Director of Cloud Legal and Regulatory Affairs) at Google in Zurich, "
-    "where he oversees regulatory compliance for cloud infrastructure at international scale. "
+    "Cloud Regulatory Affairs at Google in Zurich — the first Malagasy to reach a senior "
+    "leadership position in this company. He regularly speaks at major international forums on "
+    "AI governance and the modernisation of public infrastructure through Cloud. "
     "Norolala Randrianarison handles day-to-day operational management. Guillaume Rakotonjanahary "
     "Tsantaniaina and Karine Maholisoa Rajaofera each lead a complementary strand of the project. "
     "Guillaume is Technical Project Lead for ML development, pipeline architecture, and cloud "
@@ -296,12 +298,13 @@ qlabel(doc, "Question 4 — Domains and Subdomains (300-word limit)")
 para(doc,
     "This dialectal translation project operates at the intersection of three priority domains "
     "defined by LINGUA Africa.\n\n"
-    "The first domain is education. Maison du Numérique welcomes over 550 young people and adults "
-    "each month through its digital literacy programmes — E-JERY (internet and digital discovery) "
-    "and HOLI DEV (coding and computational thinking) — both supported by Telma Madagascar. Most "
-    "significantly, Maison du Numérique runs a dedicated digital inclusion programme for children "
-    "with Down syndrome (trisomy 21), an initiative led by its volunteer team that demonstrates "
-    "a radically inclusive vision of digital access. Integrating a dialectal translation system "
+    "The first domain is education. Maison du Numérique has reached over 5,500 unique "
+    "beneficiaries through its digital literacy programmes, with 2,366 people trained and "
+    "certified via e-jery, ANKY, and Madagascar DataCamp. Most significantly, Maison du "
+    "Numérique runs a digital inclusion programme for children with Down syndrome (trisomy 21) "
+    "— 28 children accompanied in partnership with Down Syndrome Madagascar — and the Ampela "
+    "Online programme for women's entrepreneurship, initiatives that demonstrate a radically "
+    "inclusive vision of digital access. Integrating a dialectal translation system "
     "allows trainers to address learners in their native linguistic variety, improving "
     "comprehension and engagement. Targeted sub-domains include digital literacy, foundational "
     "education, and special needs education.\n\n"
@@ -403,10 +406,9 @@ para(doc,
     "administrative procedures can be made accessible in dialect. In terms of digital "
     "sovereignty, Madagascar will for the first time have an open linguistic infrastructure "
     "built by Malagasy people for Malagasy people.\n\n"
-    "Maison du Numérique constitutes the ideal pilot environment: over 550 monthly users, "
-    "5,000 people trained since inauguration, an established partner network (Telma, Sayna, "
-    "CoderDojo Antananarivo, STEM4Good Madagascar, ANKY), and a community of over 26 "
-    "documented active volunteers. This human fabric guarantees that the system will be "
+    "Maison du Numérique constitutes the ideal pilot environment: over 5,500 unique "
+    "beneficiaries, 2,366 people trained and certified via e-jery, ANKY, and Madagascar "
+    "DataCamp, and a community of over 26 documented active volunteers. This human fabric guarantees that the system will be "
     "evaluated by real users, in their real context, with genuine needs.")
 
 # ── Q8 ────────────────────────────────────────────────────────────────────────
@@ -581,9 +583,10 @@ para(doc,
     "intergenerational phonological variation. Local coordinators are themselves members of "
     "the targeted communities. Maison du Numérique's commitment to inclusion goes beyond "
     "gender and age: the organisation already runs a dedicated digital inclusion programme "
-    "for children with Down syndrome, led by volunteers — documented daily practice that "
-    "places it among the most genuinely inclusive organisations in Madagascar's digital "
-    "ecosystem.\n\n"
+    "for children with Down syndrome — 28 children accompanied in partnership with Down "
+    "Syndrome Madagascar — and the Ampela Online programme for women's entrepreneurship, "
+    "documented daily practices that place it among the most genuinely inclusive organisations "
+    "in Madagascar's digital ecosystem.\n\n"
     "On licensing and openness, all project deliverables — audio corpora, transcriptions, "
     "fine-tuned model weights, scripts, documentation — are published under fully open "
     "licences: Apache 2.0 for models and code, Creative Commons BY 4.0 for data.\n\n"
@@ -592,28 +595,28 @@ para(doc,
     "fine-tuning, and a scale-to-zero production infrastructure that eliminates energy "
     "consumption outside active usage periods.\n\n"
     "On data governance, all collected data is stored on GCS with encryption at rest and "
-    "access restricted to the project team. Fenitra Ravelomanantsoa, as digital law "
-    "specialist and Head of Cloud Regulatory at Google, personally ensures the project's "
-    "compliance with international data protection standards. This level of legal expertise "
-    "in data governance is rare among African language AI projects and represents a "
-    "distinctive asset of this application.")
+    "access restricted to the project team. Fenitra Ravelomanantsoa, as Head of Cloud "
+    "Regulatory Affairs at Google, personally ensures the project's compliance with "
+    "international data protection standards. This level of expertise in data governance "
+    "is rare among African language AI projects and represents a distinctive asset of this "
+    "application.")
 
 # ── Q13 ───────────────────────────────────────────────────────────────────────
 qlabel(doc, "Question 13(a) — Applying as a Consortium?")
 para(doc,
     "No. MGVaovao - Maison du Numérique (Madagasikara Vaovao) submits this proposal as the "
     "lead organisation. The project operates with an established network of operational "
-    "partners — Telma Madagascar, Sayna, CoderDojo Antananarivo, STEM4Good Madagascar, and "
-    "ANKY — who contribute to community outreach and programme delivery but are not formal "
-    "co-applicants. Letters of support can be provided on request.")
+    "partners — e-jery, ANKY, Madagascar DataCamp, and Down Syndrome Madagascar — who "
+    "contribute to community outreach and programme delivery but are not formal co-applicants. "
+    "Letters of support can be provided on request.")
 
 # ── Q14 ───────────────────────────────────────────────────────────────────────
 qlabel(doc, "Question 14 — Letters of Support and Supplementary Documentation")
 para(doc,
     "Letters of support can be requested from Maison du Numérique's operational partners, "
-    "notably Telma Madagascar for the E-JERY and HOLI DEV programmes, Sayna, CoderDojo "
-    "Antananarivo, STEM4Good Madagascar, and ANKY. These partnerships are active and "
-    "documented since the inauguration of Maison du Numérique in February 2024.\n\n"
+    "notably e-jery (digital training, 1,483 people certified), ANKY (472), Madagascar "
+    "DataCamp (411), and Down Syndrome Madagascar (trisomy 21 programme). These partnerships "
+    "are active and documented since the inauguration of Maison du Numérique in February 2024.\n\n"
     "Supplementary documentation is directly accessible in the public GitHub repositories. "
     "The repository github.com/mgvaovao/ml contains a detailed README describing the "
     "complete pipeline architecture, fine-tuning reproduction instructions, evaluation "
@@ -627,14 +630,13 @@ qlabel(doc, "Question 15 — Project Team Members and Roles (400-word limit)")
 
 subh(doc, "Fenitra Ravelomanantsoa — Founder and Executive Director, MGVaovao - Maison du Numérique")
 para(doc,
-    "A legal professional specialising in digital law and Head of Cloud Regulatory (Director of "
-    "Cloud Legal and Regulatory Affairs) at Google in Zurich, Fenitra holds a senior leadership "
-    "position at one of the world's leading technology companies, where he oversees regulatory "
-    "compliance for cloud infrastructure at international scale. After over 20 years of "
-    "international career across Paris, Barcelona, London, and Zurich, he founded the "
-    "Madagasikara Vaovao association and MGVaovao - Maison du Numérique in November 2023, "
-    "convinced that his expertise in technology governance, data protection, and cloud "
-    "compliance could directly benefit his country. He oversees the project's global strategy, "
+    "Head of Cloud Regulatory Affairs at Google in Zurich, Fenitra is the first Malagasy to "
+    "reach a senior leadership position in this company. He regularly speaks at major "
+    "international forums on AI governance and the modernisation of public infrastructure "
+    "through Cloud. After over 20 years of international career across Paris, Barcelona, "
+    "London, and Zurich, he founded the Madagasikara Vaovao association and MGVaovao - Maison "
+    "du Numérique in November 2023, convinced that his expertise in technology governance, "
+    "data protection, and cloud compliance could directly benefit his country. He oversees the project's global strategy, "
     "institutional partnerships, and ethical governance.")
 
 subh(doc, "Norolala Randrianarison — Local Director and Operations Manager")
@@ -674,7 +676,8 @@ para(doc,
     "functional specifications for the technical pipeline. Proficient in Word, Excel, Google "
     "Sheets, and the full suite of Google platforms, she serves as the interface between "
     "field operational realities and the technical strand. She also leads the digital "
-    "inclusion programme for children with Down syndrome at Maison du Numérique.")
+    "inclusion programme for children with Down syndrome at Maison du Numérique (28 children "
+    "accompanied in partnership with Down Syndrome Madagascar).")
 
 subh(doc, "Partnerships & Impact Lead (to be recruited) · 14 Local Coordinators (to be recruited)")
 para(doc,
@@ -706,10 +709,10 @@ para(doc,
     "2022) on massively multilingual translation; on Pratap et al. (2023) on MMS for "
     "multilingual voice synthesis; and on advances in automatic speech recognition for "
     "under-resourced languages.\n\n"
-    "Maison du Numérique brings a documented and verifiable community base: 5,000 people "
-    "trained since the February 2024 inauguration, 550 active monthly users, and operational "
-    "partnerships with Telma Madagascar, Sayna, CoderDojo Antananarivo, STEM4Good Madagascar, "
-    "and ANKY.")
+    "Maison du Numérique brings a documented and verifiable community base: over 5,500 unique "
+    "beneficiaries since its February 2024 inauguration, 2,366 people trained and certified "
+    "via e-jery (1,483), ANKY (472), and Madagascar DataCamp (411), and 28 children with Down "
+    "syndrome accompanied in partnership with Down Syndrome Madagascar.")
 
 doc.add_page_break()
 
@@ -837,8 +840,8 @@ note(doc,
     "NOTE 2 — Detailed Budget (Q17a): the form requires a separate Excel file "
     "(LINGUA_Africa_Budget_Detaille.xlsx). Upload it to Submittable during submission.")
 note(doc,
-    "NOTE 3 — Letters of Support (Q14): prepare support letters from Telma and/or Sayna. "
-    "These letters will significantly strengthen the application.")
+    "NOTE 3 — Letters of Support (Q14): prepare support letters from e-jery and/or ANKY "
+    "and Down Syndrome Madagascar. These letters will significantly strengthen the application.")
 note(doc,
     "NOTE 4 — Word count: each answer was drafted under the stated word limit. "
     "Verify in Word (Review > Word Count) before final submission.")

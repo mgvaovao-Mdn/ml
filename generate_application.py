@@ -211,8 +211,8 @@ para(doc,
     "constituer les premières ressources linguistiques vocales ouvertes pour l'ensemble du malgache "
     "dialectal, et de déployer ce service dans les programmes d'éducation, de santé et d'inclusion "
     "civique de MGVaovao - Maison du Numérique, un centre communautaire qui accueille plus de "
-    "550 personnes par mois et a formé plus de 5 000 individus depuis son inauguration en "
-    "février 2024.")
+    "touché plus de 5 500 bénéficiaires uniques et accompagné 2 366 personnes certifiées "
+    "depuis son inauguration en février 2024.")
 
 # ── Q2 ────────────────────────────────────────────────────────────────────────
 qlabel(doc, "Question 2 — Justification de la proposition et objectifs (750 mots max)")
@@ -251,14 +251,16 @@ para(doc,
     "Les bénéficiaires directs sont les locuteurs de dialectes malgaches sous-représentés, soit une "
     "population estimée à plus de quinze millions de personnes. Les bénéficiaires indirects "
     "incluent les prestataires de services éducatifs, sanitaires et civiques. Parmi les programmes "
-    "actifs de la Maison du Numérique figure l'inclusion numérique des enfants atteints de "
-    "trisomie 21, une initiative qui illustre que la mission de l'organisation embrasse toutes "
-    "les formes d'exclusion.\n\n"
+    "actifs de la Maison du Numérique figurent l'inclusion numérique des enfants porteurs de "
+    "trisomie 21 — 28 enfants accompagnés sur trois cohortes en partenariat avec Down Syndrome "
+    "Madagascar — et le programme Ampela Online dédié à l'entrepreneuriat féminin, des initiatives "
+    "qui illustrent que la mission de l'organisation embrasse toutes les formes d'exclusion.\n\n"
     "L'équipe portant ce projet est ancrée localement et compétente techniquement à un niveau "
-    "international. Fenitra Ravelomanantsoa, fondateur de Madagasikara Vaovao, est Directeur des "
-    "affaires juridiques et réglementaires Cloud (Head of Cloud Regulatory) au sein de Google à "
-    "Zurich, où il supervise la conformité réglementaire des infrastructures cloud à l'échelle "
-    "internationale. Norolala Randrianarison assure la direction opérationnelle quotidienne. "
+    "international. Fenitra Ravelomanantsoa, fondateur de Madagasikara Vaovao, est Head of Cloud "
+    "Regulatory Affairs chez Google à Zurich — premier Malgache à accéder à des fonctions de "
+    "direction stratégique dans cette entreprise. Il intervient dans les grands forums "
+    "internationaux sur la gouvernance de l'IA et la modernisation des infrastructures publiques "
+    "par le Cloud. Norolala Randrianarison assure la direction opérationnelle quotidienne. "
     "Guillaume Rakotonjanahary Tsantaniaina et Karine Maholisoa Rajaofera dirigent chacun un volet "
     "complémentaire du projet. Guillaume est Chef de projet technique en charge du développement "
     "ML, de l'architecture du pipeline et du déploiement cloud. Titulaire d'un Master en Big Data "
@@ -306,12 +308,13 @@ qlabel(doc, "Question 4 — Domaines et sous-domaines (300 mots max)")
 para(doc,
     "Ce projet de traduction dialectale porté par MGVaovao - Maison du Numérique se déploie à "
     "l'intersection de trois domaines prioritaires définis par LINGUA Africa.\n\n"
-    "Le premier est l'éducation. La Maison du Numérique accueille chaque mois plus de 550 jeunes "
-    "et adultes dans ses programmes de formation numérique, dont E-JERY et HOLI DEV, soutenus par "
-    "Telma Madagascar. De façon encore plus remarquable, la Maison du Numérique a développé un "
-    "programme d'inclusion numérique spécifiquement destiné aux enfants atteints de trisomie 21, "
-    "une initiative portée par ses bénévoles qui témoigne d'une conception radicalement inclusive "
-    "du numérique. L'intégration d'un système de traduction dialectale dans ces programmes "
+    "Le premier est l'éducation. La Maison du Numérique a accompagné plus de 5 500 bénéficiaires "
+    "uniques dans ses programmes de formation numérique, dont 2 366 personnes certifiées via "
+    "e-jery, ANKY et Madagascar DataCamp. De façon encore plus remarquable, la Maison du Numérique "
+    "a développé un programme d'inclusion numérique pour les enfants porteurs de trisomie 21 — "
+    "28 enfants accompagnés en partenariat avec Down Syndrome Madagascar — et le programme Ampela "
+    "Online pour l'entrepreneuriat féminin, des initiatives qui témoignent d'une conception "
+    "radicalement inclusive du numérique. L'intégration d'un système de traduction dialectale dans ces programmes "
     "permettra de s'adresser aux apprenants dans leur variété linguistique maternelle, améliorant "
     "ainsi la compréhension et l'engagement. Les sous-domaines ciblés comprennent l'alphabétisation "
     "numérique, l'éducation de base et l'éducation spécialisée.\n\n"
@@ -416,10 +419,9 @@ para(doc,
     "peuvent être rendues accessibles en dialecte. Sur le plan de la souveraineté numérique enfin, "
     "Madagascar disposera pour la première fois d'une infrastructure linguistique ouverte "
     "construite par des Malgaches pour des Malgaches.\n\n"
-    "La Maison du Numérique constitue l'environnement de pilotage idéal : plus de 550 utilisateurs "
-    "mensuels, 5 000 personnes formées depuis l'inauguration de février 2024, un réseau de "
-    "partenaires établis que sont Telma, Sayna, CoderDojo Antananarivo, STEM4Good Madagascar et "
-    "ANKY, ainsi qu'une communauté de plus de 26 bénévoles actifs. Ce tissu humain garantit que "
+    "La Maison du Numérique constitue l'environnement de pilotage idéal : plus de 5 500 "
+    "bénéficiaires uniques, 2 366 personnes formées et certifiées via e-jery, ANKY et Madagascar "
+    "DataCamp, ainsi qu'une communauté de plus de 26 bénévoles actifs. Ce tissu humain garantit que "
     "le système sera évalué par des utilisateurs réels, dans leur contexte réel, avec des besoins "
     "réels.")
 
@@ -596,8 +598,9 @@ para(doc,
     "les 55 ans et plus. Les coordinateurs locaux sont eux-mêmes membres des communautés ciblées. "
     "L'engagement de la Maison du Numérique pour l'inclusion va au-delà du genre et de l'âge : "
     "l'organisation conduit déjà un programme spécifique d'inclusion numérique pour les enfants "
-    "atteints de trisomie 21, ce qui témoigne de façon tangible que l'équité et l'inclusion sont "
-    "des pratiques quotidiennes documentées et non de simples déclarations d'intention.\n\n"
+    "porteurs de trisomie 21 — 28 enfants accompagnés en partenariat avec Down Syndrome Madagascar "
+    "— et le programme Ampela Online pour l'entrepreneuriat féminin, ce qui témoigne de façon "
+    "tangible que l'équité et l'inclusion sont des pratiques quotidiennes documentées.\n\n"
     "Sur les licences et l'ouverture, tous les livrables produits sont publiés sous des licences "
     "pleinement ouvertes : Apache 2.0 pour les modèles et le code, Creative Commons BY 4.0 pour "
     "les données.\n\n"
@@ -606,10 +609,9 @@ para(doc,
     "infrastructure de production à scale-to-zero éliminant la consommation d'énergie en dehors "
     "des périodes d'utilisation active.\n\n"
     "Sur la gouvernance des données, les données collectées sont stockées sur GCS avec chiffrement "
-    "au repos et accès restreint à l'équipe du projet. Fenitra Ravelomanantsoa, en tant que "
-    "juriste spécialisé en droit numérique et Directeur des affaires juridiques et réglementaires "
-    "Cloud chez Google, garantit personnellement la conformité du projet avec les standards "
-    "internationaux de protection des données. Cette expertise de directeur au sein d'une des "
+    "au repos et accès restreint à l'équipe du projet. Fenitra Ravelomanantsoa, Head of Cloud "
+    "Regulatory Affairs chez Google, garantit personnellement la conformité du projet avec les "
+    "standards internationaux de protection des données. Cette expertise au sein d'une des "
     "principales entreprises technologiques mondiales est rare dans les projets de données "
     "africaines et constitue un atout distinctif de cette candidature.")
 
@@ -618,17 +620,18 @@ qlabel(doc, "Question 13(a) — Candidature en consortium ?")
 para(doc,
     "Non. MGVaovao - Maison du Numérique (Madagasikara Vaovao) soumet cette proposition en tant "
     "qu'organisation principale. Le projet s'appuie sur un réseau de partenaires opérationnels "
-    "établis, à savoir Telma Madagascar, Sayna, CoderDojo Antananarivo, STEM4Good Madagascar et "
-    "ANKY, mais ceux-ci interviennent comme partenaires et non comme co-candidats formels. Des "
-    "lettres de soutien peuvent être fournies sur demande.")
+    "établis — e-jery, ANKY, Madagascar DataCamp et Down Syndrome Madagascar — mais ceux-ci "
+    "interviennent comme partenaires et non comme co-candidats formels. Des lettres de soutien "
+    "peuvent être fournies sur demande.")
 
 # ── Q14 ───────────────────────────────────────────────────────────────────────
 qlabel(doc, "Question 14 — Lettres de soutien et documentation complémentaire")
 para(doc,
     "Des lettres de soutien peuvent être sollicitées auprès des partenaires opérationnels de la "
-    "Maison du Numérique, notamment Telma Madagascar pour les programmes E-JERY et HOLI DEV, "
-    "Sayna, CoderDojo Antananarivo, STEM4Good Madagascar et ANKY. Ces partenariats sont actifs "
-    "et documentés depuis l'inauguration de la Maison du Numérique en février 2024.\n\n"
+    "Maison du Numérique, notamment e-jery (formation numérique, 1 483 personnes certifiées), "
+    "ANKY (472), Madagascar DataCamp (411) et Down Syndrome Madagascar (programme trisomie 21). "
+    "Ces partenariats sont actifs et documentés depuis l'inauguration de la Maison du Numérique "
+    "en février 2024.\n\n"
     "La documentation complémentaire du projet est accessible directement dans les dépôts publics "
     "GitHub. Le dépôt github.com/mgvaovao/ml contient le fichier README détaillé décrivant "
     "l'architecture complète du pipeline, les instructions de reproduction de l'affinement, les "
@@ -643,10 +646,10 @@ qlabel(doc, "Question 15 — Membres de l'équipe et rôles (400 mots max)")
 
 subh(doc, "Fenitra Ravelomanantsoa — Fondateur et Directeur général de MGVaovao - Maison du Numérique")
 para(doc,
-    "Juriste de formation et Directeur des affaires juridiques et réglementaires Cloud (Head of "
-    "Cloud Regulatory) chez Google à Zurich, Fenitra occupe un poste de direction dans l'une des "
-    "principales entreprises technologiques mondiales, où il supervise la conformité réglementaire "
-    "des infrastructures cloud à l'échelle internationale. Après plus de 20 ans de carrière "
+    "Head of Cloud Regulatory Affairs chez Google à Zurich, Fenitra est le premier Malgache à "
+    "accéder à des fonctions de direction stratégique dans cette entreprise. Il intervient "
+    "régulièrement dans les grands forums internationaux sur la gouvernance de l'IA et la "
+    "modernisation des infrastructures publiques par le Cloud. Après plus de 20 ans de carrière "
     "internationale à Paris, Barcelone, Londres et Zurich, il a fondé l'association Madagasikara "
     "Vaovao et MGVaovao - Maison du Numérique en novembre 2023, convaincu que son expertise en "
     "gouvernance des technologies, protection des données et compliance cloud pouvait bénéficier "
@@ -691,7 +694,8 @@ para(doc,
     "pipeline technique. Maîtrisant les outils bureautiques et collaboratifs tels que Word, "
     "Excel, Google Sheets et l'ensemble des plateformes Google, elle assure l'interface entre "
     "les réalités opérationnelles du terrain et le volet technique. Elle pilote également le "
-    "programme d'inclusion numérique des enfants atteints de trisomie 21 à la Maison du Numérique.")
+    "programme d'inclusion numérique des enfants porteurs de trisomie 21 (28 enfants accompagnés "
+    "en partenariat avec Down Syndrome Madagascar) à la Maison du Numérique.")
 
 subh(doc, "Chef de projet partenariats et impact (à recruter) · Coordinateurs locaux (14, à recruter)")
 para(doc,
@@ -722,10 +726,10 @@ para(doc,
     "traduction multilingue, sur les travaux de Pratap et al. (2023) sur MMS pour la synthèse "
     "vocale multilingue, et sur les avancées en reconnaissance automatique de la parole pour "
     "les langues sous-dotées.\n\n"
-    "La Maison du Numérique apporte une base communautaire documentée et vérifiable : 5 000 "
-    "personnes formées depuis l'inauguration de février 2024, 550 utilisateurs mensuels actifs, "
-    "et des partenariats opérationnels établis avec Telma Madagascar, Sayna, CoderDojo "
-    "Antananarivo, STEM4Good Madagascar et ANKY.")
+    "La Maison du Numérique apporte une base communautaire documentée et vérifiable : plus de "
+    "5 500 bénéficiaires uniques depuis son inauguration de février 2024, 2 366 personnes "
+    "formées et certifiées via e-jery (1 483), ANKY (472) et Madagascar DataCamp (411), et "
+    "28 enfants porteurs de trisomie 21 accompagnés en partenariat avec Down Syndrome Madagascar.")
 
 doc.add_page_break()
 
@@ -853,8 +857,8 @@ note(doc,
     "NOTE 2 — Budget détaillé (Q17a) : le formulaire requiert un fichier Excel séparé "
     "(LINGUA_Africa_Budget_Detaille.xlsx). Téléversez-le sur Submittable lors de la soumission.")
 note(doc,
-    "NOTE 3 — Lettres de soutien (Q14) : préparez des lettres de soutien de Telma et/ou Sayna. "
-    "Ces lettres renforceront significativement le dossier.")
+    "NOTE 3 — Lettres de soutien (Q14) : préparez des lettres de soutien de e-jery et/ou ANKY "
+    "et Down Syndrome Madagascar. Ces lettres renforceront significativement le dossier.")
 note(doc,
     "NOTE 4 — Compte de mots : chaque réponse a été rédigée sous le plafond indiqué. "
     "Vérifiez le compte dans Word (Révision > Statistiques) avant soumission.")
