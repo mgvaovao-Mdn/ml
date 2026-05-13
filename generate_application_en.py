@@ -208,8 +208,10 @@ para(doc,
     "LINGUA Africa support will allow us to extend coverage to the remaining 14 dialects, "
     "build the first open vocal resources for the full Malagasy dialect continuum, and deploy "
     "this service within the education, health, and civic inclusion programmes of MGVaovao - "
-    "Maison du Numérique, a community centre that has reached over 5,500 unique beneficiaries "
-    "and accompanied 2,366 certified people since its inauguration in February 2024.")
+    "Maison du Numérique — shortlisted for the RSE de l'Année 2026 Award (CEO Summit Indian "
+    "Ocean) —, a community centre that has reached over 5,500 unique beneficiaries (48% women, "
+    "aged 7 to 65, entirely free of charge) and accompanied 2,366 certified people since its "
+    "inauguration in February 2024.")
 
 # ── Q2 ────────────────────────────────────────────────────────────────────────
 qlabel(doc, "Question 2 — Rationale and Objectives (750-word limit)")
@@ -252,7 +254,9 @@ para(doc,
     "international level. Fenitra Ravelomanantsoa, founder of Madagasikara Vaovao, is Head of "
     "Cloud Regulatory Affairs at Google in Zurich — the first Malagasy to reach a senior "
     "leadership position in this company. He regularly speaks at major international forums on "
-    "AI governance and the modernisation of public infrastructure through Cloud. "
+    "AI governance — including the CEO Summit Indian Ocean (April 2026), where he is also a "
+    "candidate for the CEO of the Year award — and the modernisation of public infrastructure "
+    "through Cloud. "
     "Norolala Randrianarison handles day-to-day operational management. Guillaume Rakotonjanahary "
     "Tsantaniaina and Karine Maholisoa Rajaofera each lead a complementary strand of the project. "
     "Guillaume is Technical Project Lead for ML development, pipeline architecture, and cloud "
@@ -630,14 +634,14 @@ qlabel(doc, "Question 15 — Project Team Members and Roles (400-word limit)")
 
 subh(doc, "Fenitra Ravelomanantsoa — Founder and Executive Director, MGVaovao - Maison du Numérique")
 para(doc,
-    "Head of Cloud Regulatory Affairs at Google in Zurich, Fenitra is the first Malagasy to "
-    "reach a senior leadership position in this company. He regularly speaks at major "
-    "international forums on AI governance and the modernisation of public infrastructure "
-    "through Cloud. After over 20 years of international career across Paris, Barcelona, "
-    "London, and Zurich, he founded the Madagasikara Vaovao association and MGVaovao - Maison "
-    "du Numérique in November 2023, convinced that his expertise in technology governance, "
-    "data protection, and cloud compliance could directly benefit his country. He oversees the project's global strategy, "
-    "institutional partnerships, and ethical governance.")
+    "Head of Cloud Regulatory Affairs at Google in Zurich — the first Malagasy to reach a "
+    "senior leadership position in this company —, Fenitra oversees cloud regulatory compliance "
+    "at international scale. A speaker at the CEO Summit Indian Ocean (April 2026) and candidate "
+    "for the CEO of the Year award, he founded the Madagasikara Vaovao association and MGVaovao "
+    "- Maison du Numérique in November 2023 on a unique philanthropic model: funded exclusively "
+    "from the founder's personal resources, Maison du Numérique provides fully free access "
+    "(0 ariary) to digital training for Malagasy communities. He oversees the project's global "
+    "strategy, institutional partnerships, and ethical governance.")
 
 subh(doc, "Norolala Randrianarison — Local Director and Operations Manager")
 para(doc,
@@ -698,12 +702,11 @@ para(doc,
     "low-resource languages — including Whisper, Chirp (Vertex AI Studio), and VITS "
     "architectures — which established the transfer adaptation methodology now at the core "
     "of the pipeline.\n\n"
-    "This speech-to-speech translation prototype has been operational since April 2026 for "
-    "four dialects — Official Malagasy, Betsileo, Betsimisaraka, and Sakalava — with "
-    "end-to-end latency under five seconds. It constitutes a first concrete result to be "
-    "improved and extended, not a finalised system. Approximately 1,000 data pairs have "
-    "already been compiled, demonstrating the team's operational capacity to collect and "
-    "process real dialectal data.\n\n"
+    "This prototype has been operational since April 2026 for four dialects (Official Malagasy, "
+    "Betsileo, Betsimisaraka, Sakalava), with end-to-end latency under five seconds; it is a "
+    "first result to be extended, not a finalised system. Approximately 1,000 data pairs have "
+    "already been compiled, including text-text pairs for neural translation and text-audio "
+    "pairs for speech synthesis.\n\n"
     "Academically, the project builds on the foundational work of the Masakhane community "
     "on African low-resource languages; on the NLLB team publications (Costa-jussà et al., "
     "2022) on massively multilingual translation; on Pratap et al. (2023) on MMS for "
@@ -712,7 +715,9 @@ para(doc,
     "Maison du Numérique brings a documented and verifiable community base: over 5,500 unique "
     "beneficiaries since its February 2024 inauguration, 2,366 people trained and certified "
     "via e-jery (1,483), ANKY (472), and Madagascar DataCamp (411), and 28 children with Down "
-    "syndrome accompanied in partnership with Down Syndrome Madagascar.")
+    "syndrome accompanied in partnership with Down Syndrome Madagascar. Shortlisted for the "
+    "RSE de l'Année 2026 Award (CEO Summit Indian Ocean), MGVaovao benefits from external "
+    "recognition of its social impact.")
 
 doc.add_page_break()
 

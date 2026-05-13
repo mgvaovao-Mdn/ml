@@ -210,9 +210,10 @@ para(doc,
     "Le soutien de LINGUA Africa permettra d'étendre la couverture aux 14 dialectes restants, de "
     "constituer les premières ressources linguistiques vocales ouvertes pour l'ensemble du malgache "
     "dialectal, et de déployer ce service dans les programmes d'éducation, de santé et d'inclusion "
-    "civique de MGVaovao - Maison du Numérique, un centre communautaire qui accueille plus de "
-    "touché plus de 5 500 bénéficiaires uniques et accompagné 2 366 personnes certifiées "
-    "depuis son inauguration en février 2024.")
+    "civique de MGVaovao - Maison du Numérique — nominée au prix RSE de l'Année 2026 du CEO "
+    "Summit Indian Ocean —, un centre communautaire qui a touché plus de 5 500 bénéficiaires "
+    "uniques (48 % de femmes, de 7 à 65 ans, accès entièrement gratuit) et accompagné 2 366 "
+    "personnes certifiées depuis son inauguration en février 2024.")
 
 # ── Q2 ────────────────────────────────────────────────────────────────────────
 qlabel(doc, "Question 2 — Justification de la proposition et objectifs (750 mots max)")
@@ -258,9 +259,11 @@ para(doc,
     "L'équipe portant ce projet est ancrée localement et compétente techniquement à un niveau "
     "international. Fenitra Ravelomanantsoa, fondateur de Madagasikara Vaovao, est Head of Cloud "
     "Regulatory Affairs chez Google à Zurich — premier Malgache à accéder à des fonctions de "
-    "direction stratégique dans cette entreprise. Il intervient dans les grands forums "
-    "internationaux sur la gouvernance de l'IA et la modernisation des infrastructures publiques "
-    "par le Cloud. Norolala Randrianarison assure la direction opérationnelle quotidienne. "
+    "direction stratégique dans cette entreprise. Il intervient régulièrement dans les grands "
+    "forums internationaux sur la gouvernance de l'IA — dont le CEO Summit Indian Ocean "
+    "(avril 2026), où il est également candidat au prix CEO de l'Année — et la modernisation "
+    "des infrastructures publiques par le Cloud. Norolala Randrianarison assure la direction "
+    "opérationnelle quotidienne. "
     "Guillaume Rakotonjanahary Tsantaniaina et Karine Maholisoa Rajaofera dirigent chacun un volet "
     "complémentaire du projet. Guillaume est Chef de projet technique en charge du développement "
     "ML, de l'architecture du pipeline et du déploiement cloud. Titulaire d'un Master en Big Data "
@@ -646,15 +649,15 @@ qlabel(doc, "Question 15 — Membres de l'équipe et rôles (400 mots max)")
 
 subh(doc, "Fenitra Ravelomanantsoa — Fondateur et Directeur général de MGVaovao - Maison du Numérique")
 para(doc,
-    "Head of Cloud Regulatory Affairs chez Google à Zurich, Fenitra est le premier Malgache à "
-    "accéder à des fonctions de direction stratégique dans cette entreprise. Il intervient "
-    "régulièrement dans les grands forums internationaux sur la gouvernance de l'IA et la "
-    "modernisation des infrastructures publiques par le Cloud. Après plus de 20 ans de carrière "
-    "internationale à Paris, Barcelone, Londres et Zurich, il a fondé l'association Madagasikara "
-    "Vaovao et MGVaovao - Maison du Numérique en novembre 2023, convaincu que son expertise en "
-    "gouvernance des technologies, protection des données et compliance cloud pouvait bénéficier "
-    "directement à son pays. Il supervise la stratégie globale, les partenariats institutionnels "
-    "et la gouvernance éthique du projet.")
+    "Head of Cloud Regulatory Affairs chez Google à Zurich — premier Malgache à accéder à un "
+    "poste de direction stratégique dans cette entreprise —, Fenitra supervise la conformité "
+    "réglementaire des infrastructures cloud à l'échelle internationale. Intervenant au CEO "
+    "Summit Indian Ocean (avril 2026) et candidat au prix CEO de l'Année, il a fondé "
+    "l'association Madagasikara Vaovao et MGVaovao - Maison du Numérique en novembre 2023 sur "
+    "un modèle philanthropique unique : financé exclusivement sur les fonds propres du fondateur, "
+    "la Maison du Numérique offre un accès entièrement gratuit (0 ariary) à la formation "
+    "numérique pour les communautés malgaches. Il supervise la stratégie globale, les "
+    "partenariats institutionnels et la gouvernance éthique du projet.")
 
 subh(doc, "Norolala Randrianarison — Directrice locale et Responsable des opérations")
 para(doc,
@@ -715,12 +718,11 @@ para(doc,
     "d'évaluation des architectures ASR et TTS existantes pour les langues à faibles ressources, "
     "notamment Whisper, Chirp de Vertex AI Studio et les architectures VITS, qui a permis "
     "d'établir la méthodologie d'adaptation par transfert aujourd'hui au cœur du pipeline.\n\n"
-    "Ce prototype de traduction parole-vers-parole est opérationnel depuis avril 2026 pour quatre "
-    "dialectes, à savoir le malgache officiel, le betsileo, le betsimisaraka et le sakalava, avec "
-    "une latence de bout en bout inférieure à cinq secondes. Il constitue un premier résultat "
-    "concret à améliorer et à étendre, non un système finalisé. Environ 1 000 paires de données "
-    "ont déjà été constituées, ce qui démontre la capacité opérationnelle de l'équipe à collecter "
-    "et traiter des données dialectales réelles.\n\n"
+    "Ce prototype est opérationnel depuis avril 2026 pour quatre dialectes (malgache officiel, "
+    "betsileo, betsimisaraka, sakalava), avec une latence de bout en bout inférieure à cinq "
+    "secondes ; c'est un premier résultat à étendre, non un système finalisé. Environ 1 000 "
+    "paires de données ont déjà été constituées, comprenant des paires texte-texte pour la "
+    "traduction neuronale et des paires texte-audio pour la synthèse vocale.\n\n"
     "Sur le plan académique, le projet s'appuie sur les travaux fondateurs de la communauté "
     "Masakhane, sur les publications de l'équipe NLLB de Costa-jussà et al. (2022) pour la "
     "traduction multilingue, sur les travaux de Pratap et al. (2023) sur MMS pour la synthèse "
@@ -729,7 +731,9 @@ para(doc,
     "La Maison du Numérique apporte une base communautaire documentée et vérifiable : plus de "
     "5 500 bénéficiaires uniques depuis son inauguration de février 2024, 2 366 personnes "
     "formées et certifiées via e-jery (1 483), ANKY (472) et Madagascar DataCamp (411), et "
-    "28 enfants porteurs de trisomie 21 accompagnés en partenariat avec Down Syndrome Madagascar.")
+    "28 enfants porteurs de trisomie 21 accompagnés en partenariat avec Down Syndrome Madagascar. "
+    "Nominée au prix RSE de l'Année 2026 (CEO Summit Indian Ocean), MGVaovao bénéficie d'une "
+    "reconnaissance externe de son impact social.")
 
 doc.add_page_break()
 
