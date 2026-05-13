@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 Génère le fichier Word de candidature LINGUA Africa — MGVaovao / Maison du Numérique (Français)
 Source : LINGUA_Africa_Application_QA.md (version approuvée)
@@ -142,8 +142,8 @@ field(doc, "Pays du siège social :", "Madagascar")
 field(doc, "Pays de présence :", "Madagascar")
 field(doc, "Email de l'organisation :", "contact@mgvaovao.com")
 field(doc, "Présence en ligne :",
-    "https://mgvaovao.com  |  https://github.com/mgvaovao/ml  |  "
-    "https://github.com/mgvaovao/backend_ia  |  "
+    "https://mgvaovao.com  |  https://github.com/mgvaovao-Mdn/ml  |  "
+    "https://github.com/mgvaovao-Mdn/backend_ia  |  "
     "https://www.linkedin.com/company/maison-du-num%C3%A9rique-madagascar  |  "
     "https://www.facebook.com/profile.php?id=61552728359577")
 field(doc, "Candidature antérieure Masakhane :", "Non")
@@ -393,8 +393,8 @@ para(doc,
     "un GPU NVIDIA L4 de 24 Go, avec une latence de bout en bout inférieure à cinq secondes et "
     "une empreinte VRAM totale de 6,2 Go permettant trois à cinq sessions concurrentes par "
     "instance. Le code source complet, les scripts d'affinement et la documentation technique "
-    "sont publiés sur GitHub aux adresses github.com/mgvaovao/ml et "
-    "github.com/mgvaovao/backend_ia, sous licence Apache 2.0.\n\n"
+    "sont publiés sur GitHub aux adresses github.com/mgvaovao-Mdn/ml et "
+    "github.com/mgvaovao-Mdn/backend_ia, sous licence Apache 2.0.\n\n"
     "Ces composants correspondent aux modèles les plus performants disponibles au moment du "
     "développement du prototype. L'architecture est modulaire : si des modèles plus puissants "
     "ou mieux adaptés aux langues à très faibles ressources venaient à émerger au cours du "
@@ -518,7 +518,7 @@ para(doc,
     "permettant à tout partenaire institutionnel d'intégrer le service de traduction dialectale "
     "dans ses propres outils. L'API gère l'authentification, la sélection du dialecte cible, la "
     "validation des entrées audio et la remontée d'erreurs structurées. Le code source complet est "
-    "publié sur github.com/mgvaovao/backend_ia sous licence Apache 2.0.\n\n"
+    "publié sur github.com/mgvaovao-Mdn/backend_ia sous licence Apache 2.0.\n\n"
     "Par-dessus cette API, une interface temps réel — WebRTC pour les accès navigateur ou "
     "WebSocket pour les intégrations partenaires — permet des sessions de traduction interactive "
     "à moins de cinq secondes de latence. La détection de fin de phrase s'appuie sur Silero VAD, "
@@ -542,12 +542,12 @@ para(doc,
     "dialectaux couvrant l'ensemble des variétés régionales du malgache, soit un total estimé de "
     "2 500 à 3 000 heures d'enregistrement vocal transcrit et validé. Ces corpus seront publiés "
     "sur HuggingFace et déposés dans Common Voice sous licence Creative Commons BY 4.0.\n\n"
-    "En matière de modèles et d'outils, le projet publiera sur github.com/mgvaovao/ml et "
+    "En matière de modèles et d'outils, le projet publiera sur github.com/mgvaovao-Mdn/ml et "
     "HuggingFace les adaptateurs LoRA affinés de NLLB-200 pour dix-huit dialectes malgaches sous "
     "licence Apache 2.0, les checkpoints MMS-TTS-MLG VITS pour dix-huit dialectes également sous "
     "Apache 2.0, les scripts d'affinement reproductibles avec documentation complète, un benchmark "
     "d'évaluation dialectal malgache avec jeux de test hold-out et métriques de référence, ainsi "
-    "qu'une API publique documentée sur github.com/mgvaovao/backend_ia.\n\n"
+    "qu'une API publique documentée sur github.com/mgvaovao-Mdn/backend_ia.\n\n"
     "Sur le plan de l'impact communautaire, le projet documentera le nombre de sessions "
     "d'utilisation du système à la Maison du Numérique avec un objectif de 2 000 sessions sur "
     "douze mois, le nombre de locuteurs natifs ayant participé à la collecte avec un objectif de "
@@ -636,11 +636,11 @@ para(doc,
     "Ces partenariats sont actifs et documentés depuis l'inauguration de la Maison du Numérique "
     "en février 2024.\n\n"
     "La documentation complémentaire du projet est accessible directement dans les dépôts publics "
-    "GitHub. Le dépôt github.com/mgvaovao/ml contient le fichier README détaillé décrivant "
+    "GitHub. Le dépôt github.com/mgvaovao-Mdn/ml contient le fichier README détaillé décrivant "
     "l'architecture complète du pipeline, les instructions de reproduction de l'affinement, les "
     "métriques d'évaluation obtenues et la structure des données, ainsi qu'un fichier "
     "MGVaovao_Architecture_Complete.md qui documente l'ensemble des choix architecturaux, des "
-    "dépendances et du flux de données. Le dépôt github.com/mgvaovao/backend_ia contient de même "
+    "dépendances et du flux de données. Le dépôt github.com/mgvaovao-Mdn/backend_ia contient de même "
     "un README complet et la documentation de l'API. L'ensemble de ces ressources est publié "
     "sous licence Apache 2.0.")
 
@@ -854,7 +854,7 @@ doc.add_page_break()
 h1(doc, "Notes avant soumission")
 
 note(doc,
-    "NOTE 1 — GitHub public : avant soumission, rendez le dépôt github.com/mgvaovao/ml public "
+    "NOTE 1 — GitHub public : avant soumission, rendez le dépôt github.com/mgvaovao-Mdn/ml public "
     "et ajoutez un fichier LICENSE (Apache 2.0). Vérifiez que MGVaovao_Architecture_Complete.md "
     "est bien présent dans le dépôt.")
 note(doc,

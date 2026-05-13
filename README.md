@@ -1,4 +1,4 @@
-# MGVaovao — Malagasy Multilingual Speech-to-Speech Translation Pipeline
+﻿# MGVaovao — Malagasy Multilingual Speech-to-Speech Translation Pipeline
 
 Real-time speech-to-speech translation from six international languages into Malagasy dialects.  
 **Input:** spoken audio in FR · EN · DE · ES · IT · PT  
@@ -474,7 +474,7 @@ This is the recommended workflow for iterating on model code locally, especially
 
 ```bash
 # 1. Clone
-git clone https://github.com/mgvaovao/ml.git
+git clone https://github.com/mgvaovao-Mdn/ml.git
 cd ml
 
 # 2. Create virtual environment

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 Génère le fichier Excel de budget détaillé LINGUA Africa — MGVaovao
 Budget total : 220 000 USD cash  +  150 000 USD crédits GCP
@@ -233,7 +233,7 @@ _cover(ws0, 22, 3, "Fenitra Ravelomanantsoa — fenitra@google.com",
        size=10, merge_to=5)
 _cover(ws0, 23, 2, "Dépôt GitHub :", bold=True, size=10, color="333333")
 _cover(ws0, 23, 3,
-       "github.com/mgvaovao/ml  |  github.com/mgvaovao/backend_ia",
+       "github.com/mgvaovao-Mdn/ml  |  github.com/mgvaovao-Mdn/backend_ia",
        size=10, italic=True, color=TEAL, merge_to=5)
 
 
