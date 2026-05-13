@@ -744,39 +744,42 @@ h1(doc, "Budget — Question 17")
 
 qlabel(doc, "Question 17(b) — Tableau récapitulatif du budget")
 btable(doc, [
-    ("1. Personnel — direction + équipe technique (13 postes)",      "192 852"),
+    ("1. Personnel — direction + équipe technique (12 postes)",      "152 436"),
     ("2. Équipement et logiciels",                                     "8 000"),
-    ("3. Collecte terrain — 20 collecteurs × 133 USD × 4 mois",      "10 640"),
-    ("4. Annotation et vérification — 9 annotateurs × 133 USD × 3 mois", "3 591"),
-    ("5. Déplacements et terrain",                                    "16 000"),
-    ("6. Ateliers, réunions et formation",                             "4 500"),
-    ("7. Communication et sensibilisation",                            "1 500"),
-    ("8. Autres coûts directs",                                        "1 000"),
-    ("Total des coûts directs",                                     "238 083"),
-    ("9. Frais généraux / Coûts indirects (5 %)",                    "11 904"),
-    ("Grand Total",                                                 "249 987"),
+    ("3. Collecte et traitement des données",                         "14 231"),
+    ("4. Déplacements et terrain",                                    "20 000"),
+    ("5. Formation et ateliers",                                      "22 000"),
+    ("6. Communication et mobilisation",                               "2 500"),
+    ("7. Autres coûts directs",                                        "1 000"),
+    ("Total des coûts directs",                                     "220 167"),
+    ("Frais généraux / Coûts indirects (5 %)",                       "11 008"),
+    ("Grand Total",                                                 "231 175"),
 ])
 
 doc.add_paragraph()
 qlabel(doc, "Question 17(c) — Justification du budget (300 mots max)")
 para(doc,
-    "Le budget proposé de 249 987 USD reflète fidèlement les activités planifiées et les coûts "
-    "réels du contexte malgache, en restant en dessous du plafond de 250 000 USD prévu "
-    "pour la Catégorie 3.\n\n"
-    "Le poste personnel (192 852 USD) couvre 13 postes sur dix-huit mois : les cinq membres de "
-    "la direction permanente (fondateur à mi-temps, directrice locale, chef de projet technique ML, "
-    "chef de projet data et opérations, chef de projet partenariats démarrant au mois 7) et huit "
-    "développeurs — backend, frontend, IA, data scientists et DevOps — rémunérés à 1 500 000 MGA "
-    "par mois (333 USD) chacun, pleinement inclus dans le budget LINGUA Africa.\n\n"
-    "Le poste collecte terrain (10 640 USD) rémunère 20 collecteurs à 133 USD/mois (600 000 MGA) "
-    "sur quatre mois actifs de collecte intensive (20 × 133 × 4 = 10 640 USD).\n\n"
-    "Le poste annotation et vérification (3 591 USD) rémunère 9 annotateurs-transcripteurs "
-    "à 133 USD/mois (600 000 MGA) sur trois mois actifs de ground truth "
-    "(9 × 133 × 3 = 3 591 USD).\n\n"
-    "Le poste équipement et logiciels (8 000 USD) couvre six ordinateurs portables et le matériel "
-    "d'enregistrement terrain. Les déplacements (16 000 USD) couvrent les dix-huit régions "
-    "dialectales. Les ateliers (4 500 USD) financent la formation des équipes terrain, un atelier "
-    "de restitution et une conférence. Les frais généraux sont limités à 5 % (11 904 USD).")
+    "Le budget proposé de 231 175 USD reflète fidèlement les activités planifiées et les coûts "
+    "réels du contexte malgache, tout en restant nettement en dessous du plafond de 250 000 USD "
+    "prévu pour la Catégorie 3.\n\n"
+    "Le poste personnel (152 436 USD) couvre 12 postes sur dix-huit mois. La direction comprend "
+    "un fondateur à mi-temps ainsi qu'une directrice locale, un chef de projet technique ML, "
+    "un chef de projet data et opérations et un chef de projet partenariats démarrant au mois 7, "
+    "chacun rémunéré à 1 333 USD par mois (6 000 000 MGA). L'équipe technique regroupe sept "
+    "développeurs spécialisés — backend, frontend, mobile, IA/ML, data scientist, DevOps et data "
+    "engineer — rémunérés à 333 USD par mois (1 500 000 MGA) chacun.\n\n"
+    "Le poste collecte et traitement des données (14 231 USD) couvre vingt collecteurs terrain "
+    "actifs pendant quatre mois à 133 USD/mois ainsi que neuf annotateurs-transcripteurs actifs "
+    "pendant trois mois au même tarif.\n\n"
+    "Les déplacements (20 000 USD) financent les missions régionales dans quatorze régions, "
+    "le per diem des superviseurs terrain ainsi que le transport local des coordinateurs "
+    "de collecte dans leurs communautés. La formation et les ateliers (22 000 USD) couvrent "
+    "la tournée nationale dans dix-huit villes (transport, hébergement, location de salles et "
+    "supports pédagogiques), la session de formation initiale des coordinateurs, un atelier "
+    "de restitution final et la participation à une conférence NLP régionale. "
+    "La communication (2 500 USD) inclut les rapports semestriels, les outils numériques et "
+    "la stratégie de présence sur les réseaux sociaux. Les frais généraux sont limités à 5 % "
+    "(11 008 USD), bien en deçà du plafond autorisé de 12 %.")
 
 doc.add_page_break()
 

@@ -59,3 +59,9 @@ null
 server.err
 ~$*.xlsx
 ~$*.docx
+
+# Private reference documents (confidential — do not push)
+CEO Summit - Biographie Fenitra Ravelomanantsoa.pdf
+Rapport RSE - RSE de l'année - Maison du Numérique Madagascar.docx
+CEO-DE-LANNEE.docx
+Résumé activité et impact social- Maison du Numérique Madagascar.docx

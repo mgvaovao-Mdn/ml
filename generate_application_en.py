@@ -728,38 +728,40 @@ h1(doc, "Budget — Question 17")
 
 qlabel(doc, "Question 17(b) — Summary Budget Table")
 btable(doc, [
-    ("1. Personnel — leadership + technical team (13 positions)",    "192,852"),
+    ("1. Personnel — leadership + technical team (12 positions)",    "152,436"),
     ("2. Equipment and software",                                      "8,000"),
-    ("3. Field collection — 20 collectors × USD 133 × 4 months",     "10,640"),
-    ("4. Annotation & ground truth — 9 annotators × USD 133 × 3 months", "3,591"),
-    ("5. Travel and field activities",                                "16,000"),
-    ("6. Workshops, meetings and training",                            "4,500"),
-    ("7. Communications and outreach",                                 "1,500"),
-    ("8. Other direct costs",                                          "1,000"),
-    ("Total Direct Costs",                                          "238,083"),
-    ("9. Overhead / Indirect Costs (5%)",                            "11,904"),
-    ("Grand Total",                                                 "249,987"),
+    ("3. Data collection and processing",                             "14,231"),
+    ("4. Travel and field activities",                                "20,000"),
+    ("5. Training and workshops",                                     "22,000"),
+    ("6. Communications and outreach",                                 "2,500"),
+    ("7. Other direct costs",                                          "1,000"),
+    ("Total Direct Costs",                                          "220,167"),
+    ("Overhead / Indirect Costs (5%)",                               "11,008"),
+    ("Grand Total",                                                 "231,175"),
 ])
 
 doc.add_paragraph()
 qlabel(doc, "Question 17(c) — Budget Justification (300-word limit)")
 para(doc,
-    "The proposed budget of USD 249,987 faithfully reflects the planned activities and the "
-    "real cost structure of the Malagasy context, remaining below the USD 250,000 ceiling "
+    "The proposed budget of USD 231,175 faithfully reflects the planned activities and the "
+    "real cost structure of the Malagasy context, remaining well below the USD 250,000 ceiling "
     "for Category 3.\n\n"
-    "Personnel (USD 192,852) covers 13 positions over eighteen months: the five permanent "
-    "leadership team members (founder at 50%, local director, Technical ML Project Lead, "
-    "Data Operations Project Lead, and partnerships project lead starting month 7), plus "
-    "eight developers — backend, frontend, AI, data science, DevOps — paid at 1,500,000 MGA "
-    "per month (USD 333 each), fully included in the LINGUA Africa budget.\n\n"
-    "Field collection (USD 10,640) pays 20 field collectors at USD 133/month (600,000 MGA) "
-    "over four active collection months (20 × 133 × 4 = USD 10,640).\n\n"
-    "Annotation and ground truth (USD 3,591) pays 9 transcription annotators at USD 133/month "
-    "(600,000 MGA) over three active processing months (9 × 133 × 3 = USD 3,591).\n\n"
-    "Equipment and software (USD 8,000) covers six laptops and field recording hardware. "
-    "Travel (USD 16,000) covers eighteen dialect regions. Workshops (USD 4,500) fund field "
-    "team training, a final dissemination event, and a regional conference. Overhead is "
-    "capped at 5% (USD 11,904).")
+    "Personnel (USD 152,436) covers 12 positions over eighteen months. The leadership team "
+    "comprises a founder at 50% time, a local director, a Technical ML Project Lead, a Data "
+    "and Operations Project Lead and a Partnerships Project Lead joining at month 7, each "
+    "compensated at USD 1,333 per month (MGA 6,000,000). The technical team consists of seven "
+    "specialized developers — backend, frontend, mobile, AI/ML, data scientist, DevOps and data "
+    "engineer — paid at USD 333 per month (MGA 1,500,000) each.\n\n"
+    "Data collection and processing (USD 14,231) covers twenty field collectors active for four "
+    "months at USD 133/month as well as nine transcription annotators active for three months "
+    "at the same rate.\n\n"
+    "Travel (USD 20,000) covers regional missions across fourteen regions, per diem for field "
+    "supervisors and local transport for collection coordinators within their communities. "
+    "Training and workshops (USD 22,000) fund a national tour of eighteen cities (transport, "
+    "accommodation, conference room rental and training materials), an initial coordinators "
+    "training session, a final dissemination event and participation in a regional NLP conference. "
+    "Communications (USD 2,500) cover semi-annual reports, digital tools and a social media "
+    "outreach strategy. Overhead is capped at 5% (USD 11,008), well within the 12% maximum.")
 
 doc.add_page_break()
 
