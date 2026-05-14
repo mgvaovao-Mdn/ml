@@ -1213,4 +1213,3 @@ All dialectal audio corpora collected and produced under this project are releas
 ---
 
 *MGVaovao — Maison du Numérique · Ambatonakanga, Antananarivo · mgvaovao.com*  
-*Supported by LINGUA Africa — Masakhane African Languages Hub · Microsoft AI for Good Lab · Gates Foundation · Google.org*
