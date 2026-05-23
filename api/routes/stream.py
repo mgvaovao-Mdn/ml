@@ -102,6 +102,7 @@ async def stream_audio(
                 continue
 
             state, prob, audio = vad.push_bytes(raw)
+            log.info(f"VAD state={state} prob={prob:.3f}")
 
             # Always send VAD feedback so the UI can show a live indicator
             await websocket.send_json({
