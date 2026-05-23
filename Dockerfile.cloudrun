@@ -1,0 +1,93 @@
+# MGVaovao — Cloud Run GPU inference image
+#
+# All models are downloaded at BUILD time (scripts/download_models.py)
+# so cold start is ~30-60 s (GPU init only, no HF network calls).
+# Image size: ~8 GB.  GPU at runtime: NVIDIA L4 (24 GB VRAM).
+#
+# Build via Cloud Build (recommended):
+#   gcloud builds submit --config=cloudbuild-inference.yaml \
+#     --substitutions=SHORT_SHA=$(git rev-parse --short HEAD) \
+#     --project=mgvaovao-ia .
+
+FROM pytorch/pytorch:2.1.2-cuda11.8-cudnn8-runtime
+
+# ── System packages ───────────────────────────────────────────────────────────
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        ffmpeg \
+        libsndfile1 \
+        git \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /mgvaovao
+
+# ── PyTorch audio (torch already in base image) ───────────────────────────────
+RUN pip install --no-cache-dir \
+        torchaudio==2.1.2 \
+        --index-url https://download.pytorch.org/whl/cu118
+
+# ── HuggingFace stack ─────────────────────────────────────────────────────────
+RUN pip install --no-cache-dir \
+        transformers==4.51.3 \
+        accelerate==1.6.0 \
+        huggingface_hub==0.30.2 \
+        peft==0.14.0 \
+        safetensors==0.4.5 \
+        tokenizers==0.21.1
+
+# ── Audio processing ──────────────────────────────────────────────────────────
+RUN pip install --no-cache-dir \
+        openai-whisper \
+        soundfile \
+        librosa \
+        scipy \
+        numpy \
+        pandas
+
+# ── Serving ───────────────────────────────────────────────────────────────────
+RUN pip install --no-cache-dir \
+        fastapi==0.115.12 \
+        "uvicorn[standard]==0.34.0" \
+        pydantic-settings==2.9.1 \
+        python-multipart==0.0.20 \
+        requests==2.32.3 \
+        aiofiles==23.2.1 \
+        websockets==12.0 \
+        tqdm
+
+# ── Project source ────────────────────────────────────────────────────────────
+COPY src/        ./src/
+COPY api/        ./api/
+COPY scripts/    ./scripts/
+COPY pyproject.toml .
+
+RUN pip install --no-cache-dir -e .
+
+# ── Cache paths — set before model download so all libs write here ────────────
+ENV HF_HOME=/mgvaovao/.cache/huggingface
+ENV TRANSFORMERS_CACHE=/mgvaovao/.cache/huggingface/transformers
+ENV TORCH_HOME=/mgvaovao/.cache/torch
+ENV HF_HUB_DISABLE_SYMLINKS_WARNING=1
+
+RUN mkdir -p \
+    /mgvaovao/.cache/huggingface/whisper \
+    /mgvaovao/.cache/huggingface/transformers \
+    /mgvaovao/.cache/torch/hub \
+    /mgvaovao/checkpoints
+
+# ── Pre-download all models at build time ─────────────────────────────────────
+RUN python scripts/download_models.py
+
+# ── Runtime environment ───────────────────────────────────────────────────────
+ENV MGVAOVAO_DEVICE=cuda
+ENV MGVAOVAO_ROOT_DIR=/mgvaovao
+ENV MGVAOVAO_CHECKPOINTS_DIR=/mgvaovao/checkpoints
+ENV MGVAOVAO_DATASET_DIR=/mgvaovao/dataset
+ENV MGVAOVAO_HF_CACHE_DIR=/mgvaovao/.cache/huggingface
+ENV MGVAOVAO_TORCH_HUB_DIR=/mgvaovao/.cache/torch/hub
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONIOENCODING=utf-8
+
+# Cloud Run requires port 8080
+EXPOSE 8080
+
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8080"]

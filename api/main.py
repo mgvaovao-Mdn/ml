@@ -45,58 +45,74 @@ log = logging.getLogger("mgvaovao.api")
 _STATIC_DIR = Path(__file__).parent.parent / "ui" / "static"
 
 
+def _load_models_bg(app: FastAPI) -> None:
+    """Load all ML models in a background thread so uvicorn opens port 8080 immediately."""
+    import threading
+    try:
+        from mgvaovao.core.config import DIALECTS, settings
+        from mgvaovao.models.vad import SileroVAD
+        from mgvaovao.models.asr import WhisperASR
+        from mgvaovao.models.translator import NLLBTranslator
+        from mgvaovao.models.tts import MalagasyTTS
+        from mgvaovao.pipeline import MalagasyPipeline
+
+        log.info("Loading shared VAD (CPU)…")
+        shared_vad = SileroVAD(
+            threshold=settings.vad_threshold,
+            min_speech_ms=settings.vad_min_speech_ms,
+            min_silence_ms=settings.vad_min_silence_ms,
+            speech_pad_ms=settings.vad_speech_pad_ms,
+        )
+
+        log.info(f"Loading shared Whisper ({settings.whisper_model_size}) on {settings.device}…")
+        shared_asr = WhisperASR()
+
+        log.info(f"Loading shared NLLB on {settings.device}…")
+        shared_translator = NLLBTranslator("plt_latn")
+
+        _loaded_tts: dict[str, MalagasyTTS] = {}
+        for dialect in DIALECTS:
+            ckpt = settings.tts_checkpoint(dialect) / "final"
+            if ckpt.is_dir():
+                log.info(f"  TTS [{dialect}] — loading fine-tuned checkpoint…")
+                tts = MalagasyTTS(dialect)
+            else:
+                if "base" not in _loaded_tts:
+                    log.info("  TTS [base] — loading facebook/mms-tts-mlg…")
+                    _loaded_tts["base"] = MalagasyTTS("plt_latn")
+                tts = _loaded_tts["base"]
+                log.info(f"  TTS [{dialect}] — sharing base model (no checkpoint yet)")
+
+            app.state.pipelines[dialect] = MalagasyPipeline(
+                dialect,
+                vad=shared_vad,
+                asr=shared_asr,
+                translator=shared_translator,
+                tts=tts,
+            )
+            log.info(f"  Pipeline [{dialect}] ready")
+
+        app.state.models_ready = True
+        log.info("All pipelines loaded — API is ready.")
+    except Exception:
+        log.exception("Model loading failed")
+        app.state.models_ready = False
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    from mgvaovao.core.config import DIALECTS, settings
-    from mgvaovao.models.vad import SileroVAD
-    from mgvaovao.models.asr import WhisperASR
-    from mgvaovao.models.translator import NLLBTranslator
-    from mgvaovao.models.tts import MalagasyTTS
-    from mgvaovao.pipeline import MalagasyPipeline
+    import threading
+    # Initialise state immediately so /health responds before models are loaded
+    app.state.pipelines = {}
+    app.state.models_ready = False
 
-    # ── Load shared models once (saves VRAM — all dialects share the same
-    #    Whisper and NLLB base; only TTS checkpoints differ per dialect) ──────
-    log.info("Loading shared VAD (CPU)…")
-    shared_vad = SileroVAD(
-        threshold=settings.vad_threshold,
-        min_speech_ms=settings.vad_min_speech_ms,
-        min_silence_ms=settings.vad_min_silence_ms,
-        speech_pad_ms=settings.vad_speech_pad_ms,
-    )
+    # Load models in a daemon thread — uvicorn opens port 8080 without waiting
+    t = threading.Thread(target=_load_models_bg, args=(app,), daemon=True)
+    t.start()
+    log.info("Model loading started in background thread — port 8080 is open.")
 
-    log.info(f"Loading shared Whisper ({settings.whisper_model_size}) on {settings.device}…")
-    shared_asr = WhisperASR()
-
-    log.info(f"Loading shared NLLB on {settings.device}…")
-    shared_translator = NLLBTranslator("plt_latn")
-
-    # ── Per-dialect TTS: reuse base model when no fine-tuned checkpoint exists
-    app.state.pipelines: dict[str, MalagasyPipeline] = {}
-    _loaded_tts: dict[str, MalagasyTTS] = {}
-
-    for dialect in DIALECTS:
-        ckpt = settings.tts_checkpoint(dialect) / "final"
-        if ckpt.is_dir():
-            log.info(f"  TTS [{dialect}] — loading fine-tuned checkpoint…")
-            tts = MalagasyTTS(dialect)
-        else:
-            if "base" not in _loaded_tts:
-                log.info("  TTS [base] — loading facebook/mms-tts-mlg…")
-                _loaded_tts["base"] = MalagasyTTS("plt_latn")
-            tts = _loaded_tts["base"]
-            log.info(f"  TTS [{dialect}] — sharing base model (no checkpoint yet)")
-
-        app.state.pipelines[dialect] = MalagasyPipeline(
-            dialect,
-            vad=shared_vad,
-            asr=shared_asr,
-            translator=shared_translator,
-            tts=tts,
-        )
-        log.info(f"  Pipeline [{dialect}] ready")
-
-    log.info("All pipelines loaded — API is ready.")
     yield
+
     app.state.pipelines.clear()
     log.info("Pipelines released.")
 

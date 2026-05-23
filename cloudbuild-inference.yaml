@@ -1,0 +1,77 @@
+# Cloud Build — inference image ONLY (used by the GitHub push trigger)
+#
+# Triggered automatically on push to main when these paths change:
+#   src/**  api/**  Dockerfile.cloudrun  cloudbuild-inference.yaml
+#
+# Machine: default (n1-highcpu-1) — qualifies for 120 free build-min/day.
+# After the first build, Docker layer cache means model-download steps are
+# skipped entirely; only changed src/api layers rebuild (~5-10 min total).
+#
+# Deploy: Cloud Run, us-central1, NVIDIA L4 GPU, min-instances=0.
+
+substitutions:
+  _REGION: us-central1
+  _SERVICE: mgvaovao-inference
+
+steps:
+
+  # ── 1. Build inference image (cache-from pulls cached layers from AR) ───────
+  - id: build-inference
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file=Dockerfile.cloudrun
+      - --tag=us-central1-docker.pkg.dev/$PROJECT_ID/mgvaovao/inference:$SHORT_SHA
+      - --tag=us-central1-docker.pkg.dev/$PROJECT_ID/mgvaovao/inference:latest
+      - --cache-from=us-central1-docker.pkg.dev/$PROJECT_ID/mgvaovao/inference:latest
+      - .
+    timeout: 3000s
+
+  # ── 2. Push ──────────────────────────────────────────────────────────────────
+  - id: push-sha
+    name: gcr.io/cloud-builders/docker
+    args: [push, "us-central1-docker.pkg.dev/$PROJECT_ID/mgvaovao/inference:$SHORT_SHA"]
+    waitFor: [build-inference]
+
+  - id: push-latest
+    name: gcr.io/cloud-builders/docker
+    args: [push, "us-central1-docker.pkg.dev/$PROJECT_ID/mgvaovao/inference:latest"]
+    waitFor: [build-inference]
+
+  # ── 3. Deploy to Cloud Run ───────────────────────────────────────────────────
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    waitFor: [push-sha]
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image=us-central1-docker.pkg.dev/$PROJECT_ID/mgvaovao/inference:$SHORT_SHA
+      - --region=${_REGION}
+      - --project=$PROJECT_ID
+      - --platform=managed
+      - --gpu=1
+      - --gpu-type=nvidia-l4
+      - --cpu=8
+      - --memory=32Gi
+      - --no-cpu-throttling
+      - --no-gpu-zonal-redundancy
+      - --concurrency=1
+      - --min-instances=0
+      - --max-instances=2
+      - --timeout=300
+      - --port=8080
+      - --set-env-vars=MGVAOVAO_DEVICE=cuda,MGVAOVAO_WHISPER_MODEL_SIZE=small
+      - --allow-unauthenticated
+      - --quiet
+
+images:
+  - us-central1-docker.pkg.dev/$PROJECT_ID/mgvaovao/inference:$SHORT_SHA
+  - us-central1-docker.pkg.dev/$PROJECT_ID/mgvaovao/inference:latest
+
+# Default machine = n1-highcpu-1 → 120 free build-minutes/day.
+# No machineType override here — keep it free-tier eligible.
+# (First build will be slow; all subsequent builds hit the Docker layer cache
+#  and only rebuild the src/api COPY layers → ~5-10 min, well within free tier.)
+timeout: 3600s
