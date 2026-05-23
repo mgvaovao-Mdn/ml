@@ -92,8 +92,12 @@ async def stream_audio(
                 # currently only "ping" is recognised; extend as needed
                 continue
 
+            # ── disconnect frame (uvicorn sends this before raising WebSocketDisconnect)
+            if msg.get("type") == "websocket.disconnect":
+                break
+
             # ── audio binary frame ────────────────────────────────────────
-            raw: bytes = msg["bytes"]
+            raw: bytes = msg.get("bytes") or b""
             if not raw:
                 continue
 
