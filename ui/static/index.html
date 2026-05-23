@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MGVaovao — Live Translation</title>
+  <title>MGVaovao — Traduction vocale en temps réel</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -17,6 +17,7 @@
       --blue:    #3b82f6;
       --yellow:  #eab308;
       --red:     #ef4444;
+      --purple:  #8b5cf6;
     }
 
     body {
@@ -29,61 +30,174 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 2rem 1rem;
+      padding: 2rem 1rem 3rem;
     }
 
+    /* ── Loading overlay ─────────────────────────────────────────────────── */
+    #loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.96);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      backdrop-filter: blur(4px);
+      transition: opacity .4s;
+    }
+    #loading-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .loading-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.2rem;
+      text-align: center;
+      padding: 2.5rem;
+    }
+    .loading-box h2 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    #loading-msg {
+      color: var(--muted);
+      font-size: .9rem;
+    }
+    .loading-hint {
+      color: var(--border);
+      font-size: .8rem;
+      max-width: 260px;
+    }
+
+    /* ── Spinners ────────────────────────────────────────────────────────── */
+    @keyframes spin  { to { transform: rotate(360deg); } }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
+    @keyframes ripple {
+      0%   { transform: scale(.8); opacity: 1; }
+      100% { transform: scale(2.2); opacity: 0; }
+    }
+
+    .spinner-ring {
+      width: 64px;
+      height: 64px;
+      border: 4px solid var(--border);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    /* Processing spinner shown inside VAD row */
+    .process-spinner {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 2.5px solid #4c1d95;
+      border-top-color: var(--purple);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      flex-shrink: 0;
+    }
+    .processing-active .process-spinner { display: block; }
+
+    /* ── Header ──────────────────────────────────────────────────────────── */
     header {
       text-align: center;
       margin-bottom: 2rem;
     }
-    header h1 { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.02em; }
-    header p  { color: var(--muted); margin-top: .3rem; }
+    .header-logo {
+      font-size: 2.2rem;
+      margin-bottom: .3rem;
+    }
+    header h1 {
+      font-size: 1.7rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    header p { color: var(--muted); margin-top: .3rem; font-size: .9rem; }
+    .header-badge {
+      display: inline-block;
+      margin-top: .6rem;
+      padding: .2rem .7rem;
+      background: #1e3a5f;
+      color: #93c5fd;
+      border-radius: 99px;
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .05em;
+    }
 
+    /* ── Cards ───────────────────────────────────────────────────────────── */
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 1.5rem;
       width: 100%;
       max-width: 720px;
       margin-bottom: 1rem;
     }
-    .card h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 1rem; }
+    .card h2 {
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
 
-    /* Controls */
+    /* ── Controls ────────────────────────────────────────────────────────── */
     .controls { display: flex; gap: .75rem; flex-wrap: wrap; align-items: flex-end; }
-    .field { display: flex; flex-direction: column; gap: .3rem; flex: 1; min-width: 140px; }
-    .field label { font-size: .75rem; color: var(--muted); }
+    .field { display: flex; flex-direction: column; gap: .3rem; flex: 1; min-width: 150px; }
+    .field label { font-size: .75rem; color: var(--muted); font-weight: 500; }
     select {
       background: var(--bg);
       color: var(--text);
       border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: .45rem .7rem;
+      border-radius: 8px;
+      padding: .5rem .75rem;
       font-size: .9rem;
       cursor: pointer;
+      outline: none;
+      transition: border-color .15s;
     }
-    select:disabled { opacity: .5; cursor: default; }
+    select:focus  { border-color: var(--blue); }
+    select:disabled { opacity: .45; cursor: default; }
 
     #btn-toggle {
-      padding: .6rem 1.4rem;
+      padding: .65rem 1.6rem;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       background: var(--blue);
       color: #fff;
       font-size: .95rem;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
-      transition: background .15s, transform .1s;
+      transition: background .15s, transform .1s, box-shadow .15s;
       white-space: nowrap;
       align-self: flex-end;
+      box-shadow: 0 0 0 0 rgba(59,130,246,.5);
     }
-    #btn-toggle:hover  { background: #2563eb; }
-    #btn-toggle.active { background: var(--red); }
+    #btn-toggle:hover:not(:disabled) { background: #2563eb; transform: translateY(-1px); }
+    #btn-toggle:disabled { opacity: .45; cursor: default; transform: none; }
+    #btn-toggle.active {
+      background: var(--red);
+      box-shadow: 0 0 0 4px rgba(239,68,68,.2);
+    }
     #btn-toggle.active:hover { background: #dc2626; }
 
-    /* VAD meter */
-    .vad-row { display: flex; align-items: center; gap: 1rem; margin-top: .75rem; }
+    /* ── VAD meter ───────────────────────────────────────────────────────── */
+    .vad-row {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin-top: 1rem;
+    }
     .vad-bar-track {
       flex: 1;
       height: 6px;
@@ -91,150 +205,225 @@
       border-radius: 3px;
       overflow: hidden;
     }
-    #el-prob { height: 100%; width: 0; background: var(--muted); border-radius: 3px; transition: width .08s, background .08s; }
+    #el-prob {
+      height: 100%;
+      width: 0;
+      background: var(--muted);
+      border-radius: 3px;
+      transition: width .08s, background .15s;
+    }
 
     .state {
-      font-size: .8rem;
-      font-weight: 600;
-      padding: .2rem .6rem;
-      border-radius: 4px;
+      font-size: .78rem;
+      font-weight: 700;
+      padding: .25rem .7rem;
+      border-radius: 6px;
       white-space: nowrap;
+      letter-spacing: .03em;
+      transition: background .2s, color .2s;
     }
     .state.idle       { background: var(--border);  color: var(--muted); }
     .state.listening  { background: #1d4ed8;         color: #bfdbfe; }
-    .state.speaking   { background: #15803d;         color: #bbf7d0; }
+    .state.speaking   { background: #15803d;         color: #bbf7d0; animation: pulse 1s ease-in-out infinite; }
     .state.trailing   { background: #713f12;         color: #fef08a; }
-    .state.processing { background: #6d28d9;         color: #ddd6fe; }
+    .state.processing { background: #4c1d95;         color: #ddd6fe; }
     .state.error      { background: #991b1b;         color: #fecaca; }
 
-    /* Output */
+    .pipeline-note {
+      color: var(--muted);
+      font-size: .75rem;
+      text-align: center;
+      margin-top: .75rem;
+    }
+    .pipeline-note span { color: var(--blue); font-weight: 600; }
+
+    /* ── Processing banner ───────────────────────────────────────────────── */
+    #processing-banner {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: .75rem;
+      margin-top: .75rem;
+      padding: .7rem 1rem;
+      background: rgba(139,92,246,.12);
+      border: 1px solid rgba(139,92,246,.3);
+      border-radius: 8px;
+      color: #c4b5fd;
+      font-size: .85rem;
+      font-weight: 600;
+    }
+    #processing-banner.visible { display: flex; }
+    .banner-spinner {
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid rgba(139,92,246,.3);
+      border-top-color: #a78bfa;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    /* ── Output ──────────────────────────────────────────────────────────── */
     .output-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     @media (max-width: 560px) { .output-grid { grid-template-columns: 1fr; } }
 
     .output-box {
       background: var(--bg);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 10px;
       padding: 1rem;
-      min-height: 80px;
+      min-height: 90px;
+      transition: border-color .3s;
     }
-    .output-box .label { font-size: .7rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: .5rem; }
-    .output-box .text  { font-size: 1rem; color: var(--text); word-break: break-word; }
+    .output-box.updated { border-color: var(--blue); }
+    .output-box .label {
+      font-size: .68rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: .5rem;
+      font-weight: 600;
+    }
+    .output-box .text {
+      font-size: 1rem;
+      color: var(--text);
+      word-break: break-word;
+      line-height: 1.5;
+    }
 
-    /* Latency */
+    /* ── Latency ─────────────────────────────────────────────────────────── */
     table { width: 100%; border-collapse: collapse; font-size: .85rem; }
-    td { padding: .25rem .5rem; }
+    td { padding: .3rem .5rem; }
     td:last-child { text-align: right; color: var(--muted); }
     tr:not(:last-child) td { border-bottom: 1px solid var(--border); }
-    tr:last-child { font-weight: 600; }
+    tr:last-child { font-weight: 700; color: var(--blue); }
 
-    /* Log */
+    /* ── Log ─────────────────────────────────────────────────────────────── */
     #el-log {
       background: var(--bg);
       border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: 8px;
       padding: .75rem;
-      font-family: monospace;
-      font-size: .78rem;
+      font-family: "Fira Code", "Consolas", monospace;
+      font-size: .76rem;
       color: var(--muted);
       white-space: pre-wrap;
       height: 110px;
       overflow-y: auto;
     }
 
-    .pipeline-note {
-      color: var(--muted);
-      font-size: .8rem;
+    /* ── Footer ──────────────────────────────────────────────────────────── */
+    footer {
+      margin-top: 1rem;
       text-align: center;
-      margin-top: .5rem;
+      color: var(--border);
+      font-size: .75rem;
     }
-    .pipeline-note span { color: var(--blue); font-weight: 600; }
-    a { color: var(--blue); text-decoration: none; }
-    a:hover { text-decoration: underline; }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--blue); }
   </style>
 </head>
 <body>
 
+<!-- ── Loading overlay ──────────────────────────────────────────────────── -->
+<div id="loading-overlay">
+  <div class="loading-box">
+    <div class="spinner-ring"></div>
+    <h2>Chargement des modèles IA</h2>
+    <p id="loading-msg">Initialisation en cours…</p>
+    <p class="loading-hint">Le premier démarrage peut prendre 1 à 2 minutes. Merci de patienter.</p>
+  </div>
+</div>
+
+<!-- ── Header ───────────────────────────────────────────────────────────── -->
 <header>
-  <h1>🎙 MGVaovao</h1>
-  <p>Real-time multilingual → Malagasy speech translation</p>
+  <div class="header-logo">🎙</div>
+  <h1>MGVaovao</h1>
+  <p>Traduction vocale multilingue → Malgache en temps réel</p>
+  <span class="header-badge">IA · VAD · ASR · NLLB-200 · TTS</span>
 </header>
 
-<!-- Controls -->
+<!-- ── Settings ─────────────────────────────────────────────────────────── -->
 <div class="card">
-  <h2>Settings</h2>
+  <h2>Paramètres</h2>
   <div class="controls">
     <div class="field">
-      <label for="sel-dialect">Target dialect</label>
+      <label for="sel-dialect">Dialecte cible</label>
       <select id="sel-dialect">
+        <option value="plt_latn">Malgache Officiel</option>
         <option value="betsileo">Betsileo</option>
         <option value="betsimisaraka">Betsimisaraka</option>
         <option value="sakalava">Sakalava</option>
-        <option value="plt_latn">Standard (plt_latn)</option>
       </select>
     </div>
     <div class="field">
-      <label for="sel-src-lang">Source language</label>
+      <label for="sel-src-lang">Langue source</label>
       <select id="sel-src-lang">
-        <option value="auto">Auto-detect</option>
-        <option value="fr">French</option>
-        <option value="en">English</option>
-        <option value="de">German</option>
-        <option value="es">Spanish</option>
-        <option value="it">Italian</option>
-        <option value="pt">Portuguese</option>
+        <option value="auto">Détection automatique</option>
+        <option value="fr">Français</option>
+        <option value="en">Anglais</option>
+        <option value="de">Allemand</option>
+        <option value="es">Espagnol</option>
+        <option value="it">Italien</option>
+        <option value="pt">Portugais</option>
       </select>
     </div>
-    <button id="btn-toggle">🎙 Start</button>
+    <button id="btn-toggle" disabled>🎙 Démarrer</button>
   </div>
 
   <!-- VAD meter -->
   <div class="vad-row">
-    <span id="el-state" class="state idle">Stopped</span>
+    <span id="el-state" class="state idle">Arrêté</span>
     <div class="vad-bar-track">
       <div id="el-prob"></div>
     </div>
   </div>
 
+  <!-- Processing banner -->
+  <div id="processing-banner">
+    <div class="banner-spinner"></div>
+    Traitement en cours — veuillez patienter…
+  </div>
+
   <p class="pipeline-note">
     <span>VAD</span> → <span>Whisper ASR</span> → <span>NLLB-200</span> → <span>MMS-TTS</span>
-    &nbsp;|&nbsp; speak naturally — processing triggers automatically on silence
+    &nbsp;|&nbsp; Parlez naturellement — la détection de fin de parole est automatique
   </p>
 </div>
 
-<!-- Output -->
+<!-- ── Output ───────────────────────────────────────────────────────────── -->
 <div class="card">
-  <h2>Output</h2>
+  <h2>Résultat</h2>
   <div class="output-grid">
-    <div class="output-box">
-      <div class="label">Source transcript</div>
+    <div class="output-box" id="box-transcript">
+      <div class="label">Transcription source</div>
       <div class="text" id="el-transcript">—</div>
     </div>
-    <div class="output-box">
-      <div class="label">Malagasy translation</div>
+    <div class="output-box" id="box-translation">
+      <div class="label">Traduction malgache</div>
       <div class="text" id="el-translation">—</div>
     </div>
   </div>
 </div>
 
-<!-- Latency -->
+<!-- ── Latency ───────────────────────────────────────────────────────────── -->
 <div class="card">
-  <h2>Latency breakdown</h2>
+  <h2>Latence du pipeline</h2>
   <table id="el-latency">
-    <tr><td colspan="2" style="color:var(--muted);font-size:.8rem;">Waiting for first result…</td></tr>
+    <tr><td colspan="2" style="color:var(--muted);font-size:.8rem;">En attente du premier résultat…</td></tr>
   </table>
 </div>
 
-<!-- Log -->
+<!-- ── Log ──────────────────────────────────────────────────────────────── -->
 <div class="card">
-  <h2>Log</h2>
-  <div id="el-log">Ready.</div>
+  <h2>Journal</h2>
+  <div id="el-log">Prêt.</div>
 </div>
 
-<p style="color:var(--muted);font-size:.8rem;margin-top:.5rem;">
-  REST API docs: <a href="/docs" target="_blank">/docs</a> &nbsp;|&nbsp;
-  Gradio UI: <a href="http://localhost:7860" target="_blank">:7860</a>
-</p>
+<footer>
+  Maison du Numérique Madagascar &nbsp;·&nbsp;
+  <a href="/docs" target="_blank">API docs</a>
+</footer>
 
 <script src="/live/app.js"></script>
 </body>

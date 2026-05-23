@@ -24,6 +24,7 @@ let sampleBuf = new Float32Array(0); // inter-chunk accumulator
 // ── DOM refs (populated in init()) ───────────────────────────────────────────
 let btnToggle, selDialect, selSrcLang;
 let elState, elProb, elTranscript, elTranslation, elLatency, elLog;
+let elLoadingOverlay, elLoadingMsg, elProcessingBanner;
 
 // ── WebSocket ──────────────────────────────────────────────────────────────────
 
@@ -40,10 +41,10 @@ function connect() {
   log(`Connecting [dialect=${dialect} src=${srcLang}]…`);
   ws = new WebSocket(wsUrl(dialect, srcLang));
 
-  ws.onopen    = () => { log("Connected ✓"); startMic(); };
+  ws.onopen    = () => { log("Connecté"); startMic(); };
   ws.onmessage = (e) => handleMessage(JSON.parse(e.data));
-  ws.onclose   = (e) => { log(`Disconnected (${e.code})`); stopMic(); setBtn(false); };
-  ws.onerror   = ()  => log("WebSocket error");
+  ws.onclose   = (e) => { log(`Déconnecté (${e.code})`); stopMic(); setBtn(false); elProcessingBanner.classList.remove("visible"); };
+  ws.onerror   = ()  => log("Erreur WebSocket");
 }
 
 function disconnect() {
@@ -59,18 +60,25 @@ function handleMessage(msg) {
       break;
 
     case "processing":
-      elState.textContent = "Processing…";
+      elState.textContent = "Traitement…";
       elState.className   = "state processing";
+      elProcessingBanner.classList.add("visible");
       break;
 
     case "result":
+      elProcessingBanner.classList.remove("visible");
       elTranscript.textContent  = msg.source_text  || "—";
       elTranslation.textContent = msg.malagasy_text || "—";
       renderLatency(msg.latency_ms);
       playAudio(msg.audio_b64);
-      elState.textContent = "Listening…";
+      ["box-transcript", "box-translation"].forEach((id) => {
+        const el = document.getElementById(id);
+        el.classList.add("updated");
+        setTimeout(() => el.classList.remove("updated"), 1500);
+      });
+      elState.textContent = "En écoute…";
       elState.className   = "state listening";
-      log(`Done — ${msg.latency_ms.total} ms total`);
+      log(`Résultat — ${msg.latency_ms.total} ms total`);
       break;
 
     case "error":
@@ -89,16 +97,16 @@ function updateVAD(state, prob) {
 
   switch (state) {
     case "speaking":
-      elState.textContent = "Speaking…";
+      elState.textContent = "Parole détectée";
       elState.className   = "state speaking";
       break;
     case "trailing":
-      elState.textContent = "…";
+      elState.textContent = "Fin de parole…";
       elState.className   = "state trailing";
       break;
     default:
       if (elState.className !== "state processing") {
-        elState.textContent = "Listening…";
+        elState.textContent = "En écoute…";
         elState.className   = "state listening";
       }
   }
@@ -127,11 +135,11 @@ async function startMic() {
 
     recording = true;
     setBtn(true);
-    elState.textContent = "Listening…";
+    elState.textContent = "En écoute…";
     elState.className   = "state listening";
-    log(`Mic started (${audioCtx.sampleRate} Hz)`);
+    log(`Micro actif (${audioCtx.sampleRate} Hz)`);
   } catch (err) {
-    log(`Mic error: ${err.message}`);
+    log(`Erreur micro : ${err.message}`);
     disconnect();
   }
 }
@@ -145,7 +153,7 @@ function stopMic() {
   audioCtx?.close();
   audioCtx  = null;
   sampleBuf = new Float32Array(0);
-  elState.textContent = "Stopped";
+  elState.textContent = "Arrêté";
   elState.className   = "state idle";
 }
 
@@ -198,7 +206,7 @@ function renderLatency(lms) {
 // ── Button & log helpers ──────────────────────────────────────────────────────
 
 function setBtn(active) {
-  btnToggle.textContent = active ? "⏹ Stop" : "🎙 Start";
+  btnToggle.textContent = active ? "⏹ Arrêter" : "🎙 Démarrer";
   btnToggle.classList.toggle("active", active);
   selDialect.disabled = active;
   selSrcLang.disabled = active;
@@ -223,18 +231,39 @@ async function loadDialects() {
   }
 }
 
+// ── Ready polling ─────────────────────────────────────────────────────────────
+
+async function checkReady() {
+  try {
+    const res = await fetch("/ready");
+    if (res.ok) {
+      elLoadingOverlay.classList.add("hidden");
+      btnToggle.disabled = false;
+      log("Modèles chargés — prêt.");
+    } else {
+      elLoadingMsg.textContent = "Chargement des modèles en cours…";
+      setTimeout(checkReady, 3000);
+    }
+  } catch {
+    setTimeout(checkReady, 3000);
+  }
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 function init() {
-  btnToggle   = document.getElementById("btn-toggle");
-  selDialect  = document.getElementById("sel-dialect");
-  selSrcLang  = document.getElementById("sel-src-lang");
-  elState     = document.getElementById("el-state");
-  elProb      = document.getElementById("el-prob");
-  elTranscript  = document.getElementById("el-transcript");
-  elTranslation = document.getElementById("el-translation");
-  elLatency   = document.getElementById("el-latency");
-  elLog       = document.getElementById("el-log");
+  btnToggle        = document.getElementById("btn-toggle");
+  selDialect       = document.getElementById("sel-dialect");
+  selSrcLang       = document.getElementById("sel-src-lang");
+  elState          = document.getElementById("el-state");
+  elProb           = document.getElementById("el-prob");
+  elTranscript     = document.getElementById("el-transcript");
+  elTranslation    = document.getElementById("el-translation");
+  elLatency        = document.getElementById("el-latency");
+  elLog            = document.getElementById("el-log");
+  elLoadingOverlay = document.getElementById("loading-overlay");
+  elLoadingMsg     = document.getElementById("loading-msg");
+  elProcessingBanner = document.getElementById("processing-banner");
 
   btnToggle.addEventListener("click", () => {
     if (!recording) {
@@ -245,6 +274,7 @@ function init() {
   });
 
   loadDialects();
+  checkReady();
 }
 
 document.addEventListener("DOMContentLoaded", init);
