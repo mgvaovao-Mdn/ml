@@ -105,14 +105,14 @@ class Settings(BaseSettings):
     tts_utmos_threshold: float = 0.3
 
     # ── VAD (batch — used by SileroVAD in pipeline) ──────────────────────
-    vad_threshold:      float = 0.5
+    vad_threshold:      float = 0.3
     vad_min_speech_ms:  int   = 250
     vad_min_silence_ms: int   = 100
     vad_speech_pad_ms:  int   = 30
 
     # ── VAD (streaming — used by StreamingVAD in WebSocket endpoint) ──────
     # Longer silence needed to reliably detect end-of-utterance in a stream.
-    vad_stream_min_silence_ms: int = 500   # 500 ms pause = done speaking
+    vad_stream_min_silence_ms: int = 400   # 400 ms pause = done speaking
 
     # ── API ───────────────────────────────────────────────────────────────
     api_host:    str = "0.0.0.0"
