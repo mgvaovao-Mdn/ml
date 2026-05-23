@@ -52,7 +52,8 @@ RUN pip install --no-cache-dir \
         requests==2.32.3 \
         aiofiles==23.2.1 \
         websockets==12.0 \
-        tqdm
+        tqdm \
+        google-cloud-storage==2.19.0
 
 # ── Project source ────────────────────────────────────────────────────────────
 COPY src/        ./src/
@@ -84,6 +85,9 @@ ENV MGVAOVAO_CHECKPOINTS_DIR=/mgvaovao/checkpoints
 ENV MGVAOVAO_DATASET_DIR=/mgvaovao/dataset
 ENV MGVAOVAO_HF_CACHE_DIR=/mgvaovao/.cache/huggingface
 ENV MGVAOVAO_TORCH_HUB_DIR=/mgvaovao/.cache/torch/hub
+# GCS bucket holding per-dialect fine-tuned checkpoints.
+# Set at deploy time; leave empty to use baked base models only.
+ENV MGVAOVAO_CHECKPOINTS_BUCKET=mgvaovao-ia-checkpoints
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONIOENCODING=utf-8
 
