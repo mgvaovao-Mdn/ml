@@ -312,6 +312,75 @@
       overflow-y: auto;
     }
 
+    /* ── Welcome / idle modal ───────────────────────────────────────────── */
+    #welcome-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.93);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 90;
+      backdrop-filter: blur(8px);
+      transition: opacity .4s;
+    }
+    #welcome-modal.hidden { opacity: 0; pointer-events: none; }
+
+    .welcome-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 3rem 2.5rem;
+      text-align: center;
+      max-width: 420px;
+      width: 90%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.2rem;
+      box-shadow: 0 24px 80px rgba(0,0,0,.5);
+    }
+    .welcome-icon { font-size: 3rem; }
+    .welcome-card h2 {
+      font-size: 1.7rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: 0;
+    }
+    #welcome-body {
+      color: var(--muted);
+      font-size: .93rem;
+      line-height: 1.65;
+      margin: 0;
+    }
+    .welcome-hint {
+      font-size: .78rem;
+      color: var(--border);
+      line-height: 1.5;
+    }
+    #btn-start {
+      margin-top: .4rem;
+      padding: .85rem 2.8rem;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, transform .1s, box-shadow .15s;
+      box-shadow: 0 0 0 0 rgba(34,197,94,.4);
+      letter-spacing: .02em;
+    }
+    #btn-start:hover {
+      background: #16a34a;
+      transform: translateY(-2px);
+      box-shadow: 0 0 0 6px rgba(34,197,94,.15);
+    }
+
     /* ── Speaker animation ───────────────────────────────────────────────── */
     #speaker-anim {
       display: none;
@@ -364,6 +433,20 @@
     <h2>Chargement des modèles IA</h2>
     <p id="loading-msg">Initialisation en cours…</p>
     <p class="loading-hint">Le premier démarrage peut prendre 1 à 2 minutes. Merci de patienter.</p>
+  </div>
+</div>
+
+<!-- ── Welcome / idle modal ─────────────────────────────────────────────── -->
+<div id="welcome-modal" class="hidden">
+  <div class="welcome-card">
+    <div class="welcome-icon">🎙️</div>
+    <h2>MGVaovao</h2>
+    <p id="welcome-body">
+      Parlez en français, anglais, espagnol ou allemand.<br>
+      L'IA traduit automatiquement en <strong>malgache</strong> en temps réel.
+    </p>
+    <p class="welcome-hint">Le VAD détecte la parole automatiquement — pas besoin de cliquer.</p>
+    <button id="btn-start">Commencer</button>
   </div>
 </div>
 
@@ -465,6 +548,6 @@
   <a href="/docs" target="_blank">API docs</a>
 </footer>
 
-<script src="/live/app.js?v=5"></script>
+<script src="/live/app.js?v=6"></script>
 </body>
 </html>

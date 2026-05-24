@@ -22,14 +22,16 @@ let recording = false;
 let sampleBuf = new Float32Array(0); // inter-chunk accumulator
 
 // ── Inactivity timeout ────────────────────────────────────────────────────────
-const INACTIVITY_MS  = 10 * 60 * 1000; // 10 min sans parole → déconnexion auto
+const INACTIVITY_MS  = 5 * 60 * 1000; // 5 min sans parole → déconnexion + modal
 let lastSpeechTime   = 0;
 let inactivityTimer  = null;
+let disconnectReason = "manual"; // "manual" | "inactivity"
 
 // ── DOM refs (populated in init()) ───────────────────────────────────────────
 let btnToggle, selDialect, selSrcLang;
 let elState, elProb, elTranscript, elTranslation, elLatency, elLog;
 let elLoadingOverlay, elLoadingMsg, elProcessingBanner, elSpeakerAnim;
+let elWelcomeModal, elWelcomeBody, elBtnStart;
 
 // ── WebSocket ──────────────────────────────────────────────────────────────────
 
@@ -48,7 +50,17 @@ function connect() {
 
   ws.onopen    = () => { log("Connecté"); startMic(); };
   ws.onmessage = (e) => handleMessage(JSON.parse(e.data));
-  ws.onclose   = (e) => { log(`Déconnecté (${e.code})`); stopMic(); setBtn(false); elProcessingBanner.classList.remove("visible"); elSpeakerAnim.classList.remove("active"); };
+  ws.onclose   = (e) => {
+    log(`Déconnecté (${e.code})`);
+    stopMic();
+    setBtn(false);
+    elProcessingBanner.classList.remove("visible");
+    elSpeakerAnim.classList.remove("active");
+    if (disconnectReason === "inactivity") {
+      showWelcomeModal(true);
+      disconnectReason = "manual";
+    }
+  };
   ws.onerror   = ()  => log("Erreur WebSocket");
 }
 
@@ -252,11 +264,10 @@ function startInactivityTimer() {
   lastSpeechTime = Date.now();
   stopInactivityTimer();
   inactivityTimer = setInterval(() => {
-    const idleSec = Math.round((Date.now() - lastSpeechTime) / 1000);
-    if (idleSec >= INACTIVITY_MS / 1000) {
-      log("Déconnexion automatique après 10 min sans parole (économie Cloud Run).");
-      elState.textContent = "Inactif — déconnecté";
-      elState.className   = "state idle";
+    if (!recording) return;
+    if (Date.now() - lastSpeechTime >= INACTIVITY_MS) {
+      log("5 min sans parole — déconnexion automatique pour économiser Cloud Run.");
+      disconnectReason = "inactivity";
       disconnect();
     }
   }, 30_000); // vérification toutes les 30 s
@@ -269,6 +280,27 @@ function stopInactivityTimer() {
   }
 }
 
+// ── Welcome modal ─────────────────────────────────────────────────────────────
+
+function showWelcomeModal(isInactivity = false) {
+  if (isInactivity) {
+    elWelcomeBody.innerHTML =
+      "Aucune parole détectée depuis <strong>5 minutes</strong>.<br>" +
+      "L'écoute a été suspendue pour économiser les ressources.";
+    elBtnStart.textContent = "🎙️ Reprendre";
+  } else {
+    elWelcomeBody.innerHTML =
+      "Parlez en français, anglais, espagnol ou allemand.<br>" +
+      "L'IA traduit automatiquement en <strong>malgache</strong> en temps réel.";
+    elBtnStart.textContent = "🎙️ Commencer";
+  }
+  elWelcomeModal.classList.remove("hidden");
+}
+
+function hideWelcomeModal() {
+  elWelcomeModal.classList.add("hidden");
+}
+
 // ── Ready polling ─────────────────────────────────────────────────────────────
 
 async function checkReady() {
@@ -277,8 +309,8 @@ async function checkReady() {
     if (res.ok) {
       elLoadingOverlay.classList.add("hidden");
       btnToggle.disabled = false;
-      log("Modèles chargés — démarrage automatique de l'écoute…");
-      connect();
+      log("Modèles chargés — prêt.");
+      showWelcomeModal(false);
     } else {
       elLoadingMsg.textContent = "Chargement des modèles en cours…";
       setTimeout(checkReady, 3000);
@@ -304,9 +336,18 @@ function init() {
   elLoadingMsg       = document.getElementById("loading-msg");
   elProcessingBanner = document.getElementById("processing-banner");
   elSpeakerAnim      = document.getElementById("speaker-anim");
+  elWelcomeModal     = document.getElementById("welcome-modal");
+  elWelcomeBody      = document.getElementById("welcome-body");
+  elBtnStart         = document.getElementById("btn-start");
+
+  elBtnStart.addEventListener("click", () => {
+    hideWelcomeModal();
+    connect();
+  });
 
   btnToggle.addEventListener("click", () => {
     if (!recording) {
+      hideWelcomeModal();
       connect();
     } else {
       disconnect();
