@@ -21,6 +21,11 @@ let worklet   = null;
 let recording = false;
 let sampleBuf = new Float32Array(0); // inter-chunk accumulator
 
+// ── Inactivity timeout ────────────────────────────────────────────────────────
+const INACTIVITY_MS  = 10 * 60 * 1000; // 10 min sans parole → déconnexion auto
+let lastSpeechTime   = 0;
+let inactivityTimer  = null;
+
 // ── DOM refs (populated in init()) ───────────────────────────────────────────
 let btnToggle, selDialect, selSrcLang;
 let elState, elProb, elTranscript, elTranslation, elLatency, elLog;
@@ -99,6 +104,7 @@ function updateVAD(state, prob) {
     case "speaking":
       elState.textContent = "Parole détectée";
       elState.className   = "state speaking";
+      lastSpeechTime = Date.now();
       break;
     case "trailing":
       elState.textContent = "Fin de parole…";
@@ -138,6 +144,7 @@ async function startMic() {
     elState.textContent = "En écoute…";
     elState.className   = "state listening";
     log(`Micro actif (${audioCtx.sampleRate} Hz)`);
+    startInactivityTimer();
   } catch (err) {
     log(`Erreur micro : ${err.message}`);
     disconnect();
@@ -145,6 +152,7 @@ async function startMic() {
 }
 
 function stopMic() {
+  stopInactivityTimer();
   recording = false;
   worklet?.disconnect();
   worklet = null;
@@ -235,6 +243,29 @@ async function loadDialects() {
     ).join("");
   } catch {
     // keep hardcoded fallback options already in HTML
+  }
+}
+
+// ── Inactivity watchdog ───────────────────────────────────────────────────────
+
+function startInactivityTimer() {
+  lastSpeechTime = Date.now();
+  stopInactivityTimer();
+  inactivityTimer = setInterval(() => {
+    const idleSec = Math.round((Date.now() - lastSpeechTime) / 1000);
+    if (idleSec >= INACTIVITY_MS / 1000) {
+      log("Déconnexion automatique après 10 min sans parole (économie Cloud Run).");
+      elState.textContent = "Inactif — déconnecté";
+      elState.className   = "state idle";
+      disconnect();
+    }
+  }, 30_000); // vérification toutes les 30 s
+}
+
+function stopInactivityTimer() {
+  if (inactivityTimer) {
+    clearInterval(inactivityTimer);
+    inactivityTimer = null;
   }
 }
 
