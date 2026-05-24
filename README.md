@@ -28,7 +28,19 @@ Architecture and engineering: tsanta@mgvaovao.com
 15. [Real-Time Browser UI](#15-real-time-browser-ui)
 16. [Training Pipeline](#16-training-pipeline)
 17. [Fine-Tuning Guide](#17-fine-tuning-guide)
-18. [GCP Deployment](#18-gcp-deployment)
+18. [GCP Deployment — Complete Step-by-Step Guide](#18-gcp-deployment--complete-step-by-step-guide)
+    - [18.0 Infrastructure Overview](#180--gcp-infrastructure-overview)
+    - [18.1 One-Time Project Setup](#181--one-time-gcp-project-setup)
+    - [18.2 Build the Inference Image](#182--build-the-inference-docker-image)
+    - [18.3 Deploy to Cloud Run GPU](#183--deploy-to-cloud-run-gpu)
+    - [18.4 Logs & Debugging](#184--cloud-run-logs--debugging)
+    - [18.5 Managing Checkpoints](#185--managing-fine-tuned-checkpoints)
+    - [18.6 Vertex AI Training Jobs](#186--vertex-ai-custom-training-jobs)
+    - [18.7 GitHub Auto-Trigger](#187--github--cloud-build-automatic-trigger-optional)
+    - [18.8 Local Testing with Mock Server](#188--local-testing-with-mock-server-before-building)
+    - [18.9 Known Issues & Fixes](#189--known-issues--fixes-applied)
+    - [18.10 Variables & Migration Checklist](#1810--complete-variables--migration-checklist)
+    - [18.11 Migration to New GCP Project](#1811--migration-to-a-new-gcp-project)
 19. [Environment Variables](#19-environment-variables)
 20. [MLOps & Monitoring](#20-mlops--monitoring)
 21. [Cost Reference](#21-cost-reference)
@@ -877,66 +889,794 @@ gsutil -m cp -r checkpoints/tts_betsileo/  gs://mgvaovao-models/mms_tts_betsileo
 
 ---
 
-## 18. GCP Deployment
+## 18. GCP Deployment — Complete Step-by-Step Guide
 
-### Build and push CUDA image (Cloud Build)
+This section documents every step required to deploy MGVaovao from zero on Google Cloud Platform. It covers infrastructure setup, building the Docker image, deploying Cloud Run GPU, running training jobs on Vertex AI, and migrating to a new GCP project.
 
-```bash
-gcloud builds submit --config cloudbuild.yaml .
+> **Audience:** ML engineers new to GCP. Every command is explained. No steps are skipped.
+
+---
+
+### 18.0 — GCP Infrastructure Overview
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Google Cloud Project: mgvaovao-ia  (region: us-central1)       │
+│                                                                  │
+│  ┌─────────────────┐    ┌──────────────────────────────────┐    │
+│  │ Artifact Registry│    │  Cloud Run GPU (mgvaovao-inference)│   │
+│  │  mgvaovao/       │───▶│  NVIDIA L4 · 8 vCPU · 32 GB RAM │    │
+│  │  inference:latest│    │  min=0 / max=2 · port 8080       │    │
+│  └─────────────────┘    └──────────────────────────────────┘    │
+│                                         │                        │
+│  ┌──────────────────┐                   ▼                        │
+│  │  Cloud Build     │    ┌──────────────────────────────────┐    │
+│  │  cloudbuild-     │    │  GCS: mgvaovao-ia-checkpoints    │    │
+│  │  inference.yaml  │    │  tts_{dialect}/final/            │    │
+│  └──────────────────┘    │  nllb_{dialect}/final/           │    │
+│                          └──────────────────────────────────┘    │
+│  ┌──────────────────┐                                            │
+│  │  Vertex AI       │    ┌──────────────────────────────────┐    │
+│  │  Custom Training │    │  GCS: mgvaovao-ia_cloudbuild     │    │
+│  │  (NLLB + TTS FT) │    │  (Cloud Build source archives)   │    │
+│  └──────────────────┘    └──────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-Builds `Dockerfile.cuda` and pushes two tags to Artifact Registry:
-- `cuda-{SHORT_SHA}` (immutable, per-commit)
-- `cuda-latest` (rolling)
+**What happens at deploy time:**
+1. `cloudbuild-inference.yaml` builds `Dockerfile.cloudrun` — all 4 models are downloaded inside the image (~8 GB)
+2. Image is pushed to Artifact Registry
+3. Cloud Run is updated to the new image revision
+4. On cold start, Cloud Run pulls checkpoints from GCS and loads all pipelines into GPU memory (~60–120 s)
+5. `/ready` returns HTTP 200 — the UI unlocks
 
-Machine: `E2_HIGHCPU_8` (~8 min build). No local Docker required.
+---
 
-### Deploy to Cloud Run GPU
+### 18.1 — One-Time GCP Project Setup
+
+Run these commands **once** when creating a new project. Skip any step you have already done.
+
+#### Step 1 — Install and initialize gcloud CLI
 
 ```bash
-gcloud run services replace deploy/cloudrun_inference.yaml \
-  --region us-central1
+# Install: https://cloud.google.com/sdk/docs/install
+# After installation, authenticate:
+gcloud auth login                          # opens browser
+gcloud auth application-default login      # for SDK libraries (Python)
 ```
 
-Key specs (`cloudrun_inference.yaml`):
-- Machine: `g2-standard-8` (8 vCPU, 32 GB RAM)
-- GPU: NVIDIA L4, `--no-gpu-zonal-redundancy`
-- Scaling: min 1, max 4 instances
-- Startup probe: 60 s timeout (model loading)
-- WebSocket support: `--session-affinity`
-
-Cold start is ~20–30 s (models loaded from GCS). Cloud Scheduler pings every 15 min to keep warm.
-
-### Launch a Vertex AI training job
+#### Step 2 — Create or select a GCP project
 
 ```bash
+# Option A: create a new project
+gcloud projects create mgvaovao-ia --name="MGVaovao IA"
+
+# Option B: use existing project
+gcloud config set project mgvaovao-ia
+
+# Verify
+gcloud config get-value project            # should print: mgvaovao-ia
+```
+
+> **Note:** Billing must be enabled on the project before Cloud Run GPU can be used.  
+> GCP Console → Billing → Link billing account to project.
+
+#### Step 3 — Save your project number (needed for IAM)
+
+```bash
+gcloud projects describe mgvaovao-ia --format="value(projectNumber)"
+# Expected output: 97374817504
+```
+
+Save this value — you need it in Step 6.
+
+#### Step 4 — Enable required APIs
+
+```bash
+gcloud services enable \
+  run.googleapis.com \
+  artifactregistry.googleapis.com \
+  cloudbuild.googleapis.com \
+  storage.googleapis.com \
+  aiplatform.googleapis.com \
+  pubsub.googleapis.com \
+  cloudscheduler.googleapis.com \
+  logging.googleapis.com \
+  monitoring.googleapis.com \
+  iam.googleapis.com \
+  --project=mgvaovao-ia
+```
+
+This takes 1–3 minutes. Verify:
+
+```bash
+gcloud services list --enabled --project=mgvaovao-ia | grep -E "run|build|artifact|aiplatform"
+```
+
+#### Step 5 — Create Artifact Registry repository
+
+Docker images are stored here (not in old Container Registry).
+
+```bash
+gcloud artifacts repositories create mgvaovao \
+  --repository-format=docker \
+  --location=us-central1 \
+  --description="MGVaovao Docker images" \
+  --project=mgvaovao-ia
+
+# Verify
+gcloud artifacts repositories list --project=mgvaovao-ia
+# Expected: REPOSITORY=mgvaovao  FORMAT=DOCKER  LOCATION=us-central1
+```
+
+Image path convention:
+```
+us-central1-docker.pkg.dev/mgvaovao-ia/mgvaovao/inference:latest
+us-central1-docker.pkg.dev/mgvaovao-ia/mgvaovao/inference:{SHORT_SHA}
+```
+
+#### Step 6 — Create GCS buckets
+
+```bash
+# Bucket for fine-tuned model checkpoints (pulled by Cloud Run at cold start)
+gcloud storage buckets create gs://mgvaovao-ia-checkpoints \
+  --location=us-central1 \
+  --project=mgvaovao-ia
+
+# Cloud Build uses its own bucket automatically (mgvaovao-ia_cloudbuild)
+# It is created by Cloud Build on first use — no manual creation needed
+
+# Verify
+gcloud storage buckets list --project=mgvaovao-ia
+# Expected: mgvaovao-ia-checkpoints  mgvaovao-ia_cloudbuild
+```
+
+GCS layout inside `mgvaovao-ia-checkpoints`:
+
+```
+gs://mgvaovao-ia-checkpoints/
+├── tts_plt_latn/final/         ← VitsModel.save_pretrained() output
+│   ├── config.json
+│   ├── model.safetensors
+│   └── tokenizer_config.json
+├── tts_betsileo/final/
+├── tts_betsimisaraka/final/
+├── tts_sakalava/final/
+├── nllb_plt_latn/final/        ← PEFT LoRA adapter output
+│   ├── adapter_config.json
+│   └── adapter_model.safetensors
+├── nllb_betsileo/final/
+├── nllb_betsimisaraka/final/
+└── nllb_sakalava/final/
+```
+
+At startup, Cloud Run calls `scripts/pull_checkpoints.py` which downloads only checkpoints that do not already exist locally. If the bucket is empty, base models (baked into the image) are used.
+
+#### Step 7 — Create service account for Cloud Build
+
+Cloud Build needs permission to deploy to Cloud Run.
+
+```bash
+PROJECT_NUMBER=97374817504    # replace with your project number from Step 3
+
+# Create dedicated service account
+gcloud iam service-accounts create cloudbuild-runner \
+  --display-name="Cloud Build — inference deploy" \
+  --project=mgvaovao-ia
+
+# Grant Cloud Run Admin (to create/update services)
+gcloud projects add-iam-policy-binding mgvaovao-ia \
+  --member="serviceAccount:cloudbuild-runner@mgvaovao-ia.iam.gserviceaccount.com" \
+  --role="roles/run.admin"
+
+# Grant Service Account User (to run Cloud Run as compute SA)
+gcloud projects add-iam-policy-binding mgvaovao-ia \
+  --member="serviceAccount:cloudbuild-runner@mgvaovao-ia.iam.gserviceaccount.com" \
+  --role="roles/iam.serviceAccountUser"
+
+# Grant Artifact Registry Writer (to push images)
+gcloud projects add-iam-policy-binding mgvaovao-ia \
+  --member="serviceAccount:cloudbuild-runner@mgvaovao-ia.iam.gserviceaccount.com" \
+  --role="roles/artifactregistry.writer"
+
+# Grant Storage Object Admin (to read/write checkpoints)
+gcloud projects add-iam-policy-binding mgvaovao-ia \
+  --member="serviceAccount:cloudbuild-runner@mgvaovao-ia.iam.gserviceaccount.com" \
+  --role="roles/storage.objectAdmin"
+
+# Also grant the DEFAULT Cloud Build SA (used by gcloud builds submit)
+gcloud projects add-iam-policy-binding mgvaovao-ia \
+  --member="serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com" \
+  --role="roles/run.admin"
+
+gcloud projects add-iam-policy-binding mgvaovao-ia \
+  --member="serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com" \
+  --role="roles/iam.serviceAccountUser"
+
+# Verify
+gcloud iam service-accounts list --project=mgvaovao-ia
+```
+
+#### Step 8 — Configure local gcloud profile
+
+Save a named configuration so you never have to type the project every time.
+
+```bash
+# Create a named config (e.g. "mgvaovao")
+gcloud config configurations create mgvaovao
+
+# Set all values
+gcloud config set account YOUR_EMAIL@gmail.com
+gcloud config set project mgvaovao-ia
+gcloud config set compute/region us-central1
+gcloud config set compute/zone us-central1-a
+
+# Verify
+gcloud config configurations describe mgvaovao
+
+# Switch between configs
+gcloud config configurations activate mgvaovao
+```
+
+---
+
+### 18.2 — Build the Inference Docker Image
+
+The inference image bakes all 4 models (Silero VAD, Whisper small, NLLB-200, MMS-TTS) directly into the image so cold starts require no network downloads.
+
+**Image size:** ~8 GB  
+**First build time:** ~45–60 min (model downloads)  
+**Subsequent builds:** ~5–10 min (Docker layer cache skips model downloads)
+
+#### Files involved
+
+| File | Purpose |
+|---|---|
+| `Dockerfile.cloudrun` | Multi-stage image spec — installs deps, copies code, runs `download_models.py` |
+| `cloudbuild-inference.yaml` | Cloud Build pipeline — build → push → deploy to Cloud Run |
+| `scripts/download_models.py` | Downloads all 4 models at build time (runs inside Docker) |
+
+#### Manual build command (used when there is no GitHub trigger)
+
+```bash
+# Linux / macOS / WSL
+gcloud builds submit \
+  --config=cloudbuild-inference.yaml \
+  --project=mgvaovao-ia \
+  --substitutions=SHORT_SHA=$(git rev-parse --short HEAD) \
+  .
+
+# PowerShell (Windows) — $() does not work inline in gcloud args
+$SHA = git rev-parse --short HEAD
+gcloud builds submit `
+  --config=cloudbuild-inference.yaml `
+  --project=mgvaovao-ia `
+  "--substitutions=SHORT_SHA=$SHA" `
+  .
+```
+
+> **Why `SHORT_SHA` must be explicit?**  
+> `$SHORT_SHA` is automatically populated only when a Cloud Build *trigger* fires (e.g. GitHub push). When using `gcloud builds submit` manually, it is empty — causing `invalid image name` errors. Always pass it explicitly as shown above.
+
+#### What `cloudbuild-inference.yaml` does step by step
+
+```yaml
+Step 1 — build-inference:
+  docker build -f Dockerfile.cloudrun \
+    --tag inference:{SHORT_SHA}   # immutable tag — one per commit
+    --tag inference:latest        # rolling latest
+    --cache-from inference:latest # reuse layers from previous build
+
+Step 2 — push-sha:     push inference:{SHORT_SHA} to Artifact Registry
+Step 3 — push-latest:  push inference:latest to Artifact Registry
+
+Step 4 — deploy:
+  gcloud run deploy mgvaovao-inference \
+    --image=inference:{SHORT_SHA}    # uses immutable tag, not latest
+    --gpu=1 --gpu-type=nvidia-l4
+    --cpu=8 --memory=32Gi
+    --concurrency=1
+    --min-instances=0 --max-instances=2
+    --timeout=300
+    --allow-unauthenticated
+```
+
+#### Monitor a running build
+
+```bash
+# List recent builds (with status)
+gcloud builds list --limit=5 --project=mgvaovao-ia
+
+# Stream logs of a specific build
+gcloud builds log BUILD_ID --project=mgvaovao-ia --stream
+
+# Or open in Cloud Console
+# https://console.cloud.google.com/cloud-build/builds?project=mgvaovao-ia
+```
+
+---
+
+### 18.3 — Deploy to Cloud Run GPU
+
+Cloud Run GPU is generally available since June 2025. NVIDIA L4 (24 GB VRAM) is used.
+
+#### The deploy command (run automatically by Cloud Build Step 4)
+
+```bash
+gcloud run deploy mgvaovao-inference \
+  --image=us-central1-docker.pkg.dev/mgvaovao-ia/mgvaovao/inference:{SHA} \
+  --region=us-central1 \
+  --project=mgvaovao-ia \
+  --platform=managed \
+  --gpu=1 \
+  --gpu-type=nvidia-l4 \
+  --cpu=8 \
+  --memory=32Gi \
+  --no-cpu-throttling \
+  --no-gpu-zonal-redundancy \
+  --concurrency=1 \
+  --min-instances=0 \
+  --max-instances=2 \
+  --timeout=300 \
+  --port=8080 \
+  --set-env-vars=MGVAOVAO_DEVICE=cuda,MGVAOVAO_WHISPER_MODEL_SIZE=small \
+  --allow-unauthenticated
+```
+
+**Flag explanations:**
+
+| Flag | Value | Why |
+|---|---|---|
+| `--gpu=1` | 1 GPU | One L4 per instance |
+| `--gpu-type=nvidia-l4` | L4 | 24 GB VRAM, GA since June 2025 |
+| `--cpu=8` | 8 vCPU | Required minimum for L4 on Cloud Run |
+| `--memory=32Gi` | 32 GB RAM | Required minimum for L4 on Cloud Run |
+| `--no-cpu-throttling` | — | CPU always at 100% even when idle (needed for GPU scheduling) |
+| `--no-gpu-zonal-redundancy` | — | Reduces cost — single zone only |
+| `--concurrency=1` | 1 request | One WebSocket session per instance — prevents GPU memory conflicts |
+| `--min-instances=0` | 0 | Scale to zero when idle — saves money |
+| `--max-instances=2` | 2 | Max 2 parallel sessions |
+| `--timeout=300` | 5 min | Max request duration (WebSocket sessions can be long) |
+| `--port=8080` | 8080 | Cloud Run always uses 8080 — FastAPI listens on 8080 |
+| `--allow-unauthenticated` | — | Public access — no token required |
+| `--set-env-vars=MGVAOVAO_DEVICE=cuda` | cuda | Force GPU inference |
+| `MGVAOVAO_WHISPER_MODEL_SIZE=small` | small | Balance speed/accuracy |
+
+#### Verify the deployment
+
+```bash
+# Get the service URL
+gcloud run services describe mgvaovao-inference \
+  --region=us-central1 --project=mgvaovao-ia \
+  --format="value(status.url)"
+# Expected: https://mgvaovao-inference-fzrhcfjzjq-uc.a.run.app
+
+# Test health endpoint
+curl https://mgvaovao-inference-fzrhcfjzjq-uc.a.run.app/health
+# Expected: {"status": "ok"}
+
+# Test ready endpoint (returns 503 while models load, 200 when ready)
+curl https://mgvaovao-inference-fzrhcfjzjq-uc.a.run.app/ready
+# Returns 503 for ~60-120 s, then: {"status": "ready", "dialects_loaded": [...]}
+
+# Open the real-time UI
+# https://mgvaovao-inference-fzrhcfjzjq-uc.a.run.app/live
+```
+
+#### Cold start behavior
+
+When `min-instances=0` and no request has come in for a while, Cloud Run shuts down the instance. The next request triggers a **cold start**:
+
+1. Container starts, CUDA driver initializes (~10–15 s)
+2. `api/main.py` opens port 8080 immediately — `/health` responds
+3. Background thread starts loading models:
+   - `pull_checkpoints.py` — downloads from GCS (if any fine-tuned checkpoints exist)
+   - Silero VAD loaded on CPU
+   - Whisper loaded on GPU
+   - NLLB-200 per dialect loaded on GPU
+   - MMS-TTS per dialect loaded on GPU
+4. `/ready` returns `200` — UI unlocks and mic starts automatically
+5. Total cold start: **60–120 seconds**
+
+The UI handles this with a loading overlay (`#loading-overlay`) that polls `/ready` every 3 seconds and fades away when models are ready.
+
+---
+
+### 18.4 — Cloud Run Logs & Debugging
+
+```bash
+# Stream live logs from Cloud Run
+gcloud logging read \
+  "resource.type=cloud_run_revision \
+   AND resource.labels.service_name=mgvaovao-inference" \
+  --project=mgvaovao-ia \
+  --limit=50 \
+  --freshness=1h \
+  --format="table(timestamp,textPayload)"
+
+# Filter by severity
+gcloud logging read \
+  "resource.type=cloud_run_revision \
+   AND resource.labels.service_name=mgvaovao-inference \
+   AND severity>=ERROR" \
+  --project=mgvaovao-ia --limit=20
+
+# View via Cloud Console (easier for browsing)
+# https://console.cloud.google.com/run/detail/us-central1/mgvaovao-inference/logs?project=mgvaovao-ia
+```
+
+**Common log patterns to look for:**
+
+| Log line | Meaning |
+|---|---|
+| `Model loading started in background thread` | Cold start began — port is open |
+| `All pipelines loaded — API is ready.` | All 4 dialects ready — `/ready` now returns 200 |
+| `WS open — dialect=plt_latn src_lang=None` | WebSocket session started |
+| `VAD state=idle prob=0.023` | Audio received, VAD active, no speech detected |
+| `VAD state=speaking prob=0.847` | Speech detected |
+| `VAD state=end` | End of utterance — pipeline will run |
+| `WS closed — dialect=plt_latn` | Normal client disconnect |
+| `KeyError: 'bytes'` | **BUG** — old code: check that stream.py uses `msg.get("bytes")` |
+
+---
+
+### 18.5 — Managing Fine-Tuned Checkpoints
+
+Fine-tuned models live in GCS and are pulled at every cold start. No Docker rebuild needed to update a model.
+
+#### Upload a new checkpoint after fine-tuning
+
+```bash
+# Upload a TTS checkpoint
+python scripts/push_checkpoint.py tts betsileo ./checkpoints/tts_betsileo/final
+# → uploads to gs://mgvaovao-ia-checkpoints/tts_betsileo/final/
+
+# Upload an NLLB LoRA adapter
+python scripts/push_checkpoint.py nllb betsileo ./checkpoints/nllb_betsileo/final
+# → uploads to gs://mgvaovao-ia-checkpoints/nllb_betsileo/final/
+
+# Or manually with gsutil
+gsutil -m cp -r ./checkpoints/tts_betsileo/final \
+  gs://mgvaovao-ia-checkpoints/tts_betsileo/
+```
+
+#### Force Cloud Run to pick up the new checkpoint immediately
+
+Cloud Run only pulls checkpoints on cold start. Force a restart:
+
+```bash
+gcloud run services update mgvaovao-inference \
+  --region=us-central1 \
+  --project=mgvaovao-ia
+```
+
+Or wait for the next natural cold start (min-instances=0, instance will shut down after ~15 min idle).
+
+#### Verify what's in GCS
+
+```bash
+gcloud storage ls --recursive gs://mgvaovao-ia-checkpoints/
+```
+
+---
+
+### 18.6 — Vertex AI Custom Training Jobs
+
+Vertex AI is used to run NLLB and TTS fine-tuning on cloud GPUs (NVIDIA T4 or L4 Spot).
+
+#### One-time Vertex AI setup
+
+```bash
+# Vertex AI requires the Artifact Registry image to exist first
+# (already done if you completed 18.2)
+
+# Grant Vertex AI access to GCS
+PROJECT_NUMBER=97374817504
+gcloud projects add-iam-policy-binding mgvaovao-ia \
+  --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
+  --role="roles/storage.objectAdmin"
+
+# Grant Vertex AI access to pull Docker images from Artifact Registry
+gcloud projects add-iam-policy-binding mgvaovao-ia \
+  --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
+  --role="roles/artifactregistry.reader"
+```
+
+#### Launch a training job
+
+```bash
+# Fine-tune NLLB for betsileo dialect
 gcloud ai custom-jobs create \
   --region=us-central1 \
-  --display-name="nllb-finetune-betsileo" \
-  --config=deploy/vertex_training.yaml
+  --project=mgvaovao-ia \
+  --display-name="nllb-finetune-betsileo-$(date +%Y%m%d)" \
+  --worker-pool-spec=\
+machine-type=n1-standard-8,\
+replica-count=1,\
+accelerator-type=NVIDIA_TESLA_T4,\
+accelerator-count=1,\
+executor-image-uri=us-central1-docker.pkg.dev/mgvaovao-ia/mgvaovao/mgvaovao:cuda-latest,\
+local-package-path=.,\
+python-module=training.train_nllb \
+  --args="--dialect=betsileo" \
+  --enable-web-access
+
+# Fine-tune TTS for betsileo dialect
+gcloud ai custom-jobs create \
+  --region=us-central1 \
+  --project=mgvaovao-ia \
+  --display-name="tts-finetune-betsileo-$(date +%Y%m%d)" \
+  --worker-pool-spec=\
+machine-type=n1-standard-8,\
+replica-count=1,\
+accelerator-type=NVIDIA_TESLA_T4,\
+accelerator-count=1,\
+executor-image-uri=us-central1-docker.pkg.dev/mgvaovao-ia/mgvaovao/mgvaovao:cuda-latest,\
+local-package-path=.,\
+python-module=training.train_tts \
+  --args="--dialect=betsileo"
 ```
 
-Specs (`vertex_training.yaml`):
-- Machine: `n1-standard-8` + NVIDIA Tesla T4
-- Spot: yes (~60% cheaper)
-- GCS bucket mounted at `/mgvaovao/dataset` and `/mgvaovao/checkpoints`
-- Checkpoint auto-saved to GCS every 30 min
+#### Monitor training jobs
 
-### GCS bucket layout
+```bash
+# List jobs
+gcloud ai custom-jobs list --region=us-central1 --project=mgvaovao-ia
+
+# Stream logs
+gcloud ai custom-jobs stream-logs JOB_ID --region=us-central1 --project=mgvaovao-ia
+
+# Or in Cloud Console:
+# https://console.cloud.google.com/vertex-ai/training/custom-jobs?project=mgvaovao-ia
+```
+
+**Cost reference (T4 Spot, us-central1):**
+
+| Job | Duration | Approx cost |
+|---|---|---|
+| NLLB LoRA (5 epochs, 3 000 pairs) | ~4–6 h | ~$1.68–$2.52 |
+| TTS VITS (50 epochs, 200 samples) | ~2–3 h | ~$0.84–$1.26 |
+
+> **Tip:** Add `--scheduling=spot` to enable Spot instances (~60% cheaper, but may be preempted). Always checkpoint to GCS every 30 min (`scripts/pull_checkpoints.py` handles resumption).
+
+---
+
+### 18.7 — GitHub → Cloud Build Automatic Trigger (optional)
+
+This connects your GitHub repository to Cloud Build so every push to `main` automatically triggers a build and deploy.
+
+```bash
+# 1. Connect GitHub repository via Cloud Console first:
+# https://console.cloud.google.com/cloud-build/triggers/connect?project=mgvaovao-ia
+# → Select GitHub → Authorize → Choose repository mgvaovao-Mdn/ml
+
+# 2. Create the trigger from trigger.yaml
+gcloud builds triggers create github \
+  --project=mgvaovao-ia \
+  --region=global \
+  --name="deploy-inference-on-push" \
+  --repo-owner=mgvaovao-Mdn \
+  --repo-name=ml \
+  --branch-pattern="^main$" \
+  --build-config=cloudbuild-inference.yaml \
+  --description="Auto-deploy inference on push to main"
+
+# 3. Verify
+gcloud builds triggers list --project=mgvaovao-ia
+```
+
+With this trigger, every `git push origin main` automatically:
+1. Builds the inference image using Docker layer cache (~5–10 min)
+2. Pushes to Artifact Registry
+3. Deploys to Cloud Run GPU
+4. `$SHORT_SHA` is set automatically by the trigger (no manual `--substitutions` needed)
+
+**Without the trigger** (manual workflow), always use:
+```bash
+# Linux/macOS
+gcloud builds submit --config=cloudbuild-inference.yaml \
+  --project=mgvaovao-ia \
+  --substitutions=SHORT_SHA=$(git rev-parse --short HEAD) .
+
+# PowerShell (Windows) — must use intermediate variable
+$SHA = git rev-parse --short HEAD
+gcloud builds submit --config=cloudbuild-inference.yaml `
+  --project=mgvaovao-ia "--substitutions=SHORT_SHA=$SHA" .
+```
+
+---
+
+### 18.8 — Local Testing with Mock Server (before building)
+
+Before spending 45+ min on a Cloud Build, test the UI locally with a mock inference server.
+
+```bash
+# Terminal 1 — start the mock server (port 8080)
+python scripts/mock_server.py
+
+# Terminal 2 — serve the UI pointing to localhost
+python ui/serve_local.py --local
+# Opens at http://localhost:8081/live
+
+# The mock server simulates the full WebSocket protocol:
+# - Sends VAD state frames on every audio chunk
+# - Triggers a fake result after ~20 audio chunks (~640 ms of audio)
+# - Returns MOCK translation and MOCK audio
+# - Handles disconnect cleanly without crashing
+```
+
+This lets you validate the entire browser → WebSocket → response → audio playback flow
+without deploying to GCP.
+
+---
+
+### 18.9 — Known Issues & Fixes Applied
+
+These bugs were encountered and fixed during the initial deployment. Document them here so future engineers do not repeat the debugging cycle.
+
+#### Bug 1 — `KeyError: 'bytes'` on client disconnect
+
+**Symptom:** Cloud Run logs show `KeyError: 'bytes'` immediately after a browser tab is closed or the Stop button is clicked. Traceback points to `api/routes/stream.py`.
+
+**Root cause:** When a WebSocket client disconnects, ASGI delivers a frame `{"type": "websocket.disconnect", "code": 1000}`. This frame has **no `"bytes"` key**. Old code accessed `msg["bytes"]` unconditionally — crashing on disconnect.
+
+**Fix applied** (`api/routes/stream.py`):
+```python
+# OLD (crashes on disconnect):
+raw: bytes = msg["bytes"]
+
+# NEW (safe):
+if msg.get("type") == "websocket.disconnect":
+    break
+raw: bytes = msg.get("bytes") or b""
+if not raw:
+    continue
+```
+
+#### Bug 2 — Silero VAD never triggers (threshold too strict)
+
+**Symptom:** Audio arrives (visible in logs as `VAD state=idle prob=0.12`), but speech is never detected. Pipeline never runs. No results appear in the UI.
+
+**Root cause:** The VAD threshold was `0.5`. Browser microphone audio over WebSocket has variable amplitude — many legitimate speech frames score below `0.5` on Silero VAD v5.
+
+**Fix applied** (`src/mgvaovao/core/config.py`):
+```python
+# OLD:
+vad_threshold: float = 0.5
+vad_stream_min_silence_ms: int = 500
+
+# NEW:
+vad_threshold: float = 0.3          # more sensitive to real mic audio
+vad_stream_min_silence_ms: int = 400 # detect end of phrase faster
+```
+
+#### Bug 3 — `SHORT_SHA` empty on manual `gcloud builds submit`
+
+**Symptom:** `ERROR: invalid image name "...inference:"` — image tag ends with `:` (empty SHA).
+
+**Root cause:** `$SHORT_SHA` is a Cloud Build built-in substitution that is only set automatically when a *trigger* fires. Manual `gcloud builds submit` leaves it empty.
+
+**Fix:** Always pass `--substitutions=SHORT_SHA=$(git rev-parse --short HEAD)` on manual builds. On Windows PowerShell, use an intermediate variable (inline `$()` does not expand inside gcloud args on PowerShell 5.1).
+
+---
+
+### 18.10 — Complete Variables & Migration Checklist
+
+This section lists every value that must be saved when migrating to a new machine or a new GCP project.
+
+#### GCP Project variables
+
+| Variable | Current value | Where used |
+|---|---|---|
+| `GCP_PROJECT_ID` | `mgvaovao-ia` | Every `gcloud` command |
+| `GCP_PROJECT_NUMBER` | `97374817504` | IAM member strings (`serviceAccount:N@cloudbuild...`) |
+| `GCP_REGION` | `us-central1` | Cloud Run, Vertex AI, Artifact Registry |
+| `GCP_ZONE` | `us-central1-a` | Vertex AI training VMs |
+| `GCP_ACCOUNT` | `atr.guillaume@gmail.com` | `gcloud auth login` |
+| `GCP_CONFIG_NAME` | `tsantaconfig` | `gcloud config configurations activate` |
+
+#### Cloud Run service
+
+| Variable | Current value |
+|---|---|
+| `CLOUDRUN_SERVICE` | `mgvaovao-inference` |
+| `CLOUDRUN_URL` | `https://mgvaovao-inference-fzrhcfjzjq-uc.a.run.app` |
+| `CLOUDRUN_REGION` | `us-central1` |
+
+> **Note:** The URL suffix (`fzrhcfjzjq`) is generated by GCP and cannot be chosen. If you delete and recreate the service, you get a new URL. Use a custom domain via Cloud Run domain mapping to make it stable.
+
+#### Artifact Registry
+
+| Variable | Current value |
+|---|---|
+| `AR_REPO` | `mgvaovao` |
+| `AR_IMAGE_INFERENCE` | `us-central1-docker.pkg.dev/mgvaovao-ia/mgvaovao/inference` |
+| `AR_IMAGE_CUDA` | `us-central1-docker.pkg.dev/mgvaovao-ia/mgvaovao/mgvaovao` |
+
+#### GCS Buckets
+
+| Variable | Current value | Purpose |
+|---|---|---|
+| `GCS_BUCKET_MODELS` | `mgvaovao-ia-checkpoints` | Fine-tuned model checkpoints |
+| `GCS_BUCKET_CLOUDBUILD` | `mgvaovao-ia_cloudbuild` | Cloud Build source archives (auto-managed) |
+
+#### Service accounts
+
+| Variable | Current value | Roles |
+|---|---|---|
+| `SA_CLOUDBUILD` | `cloudbuild-runner@mgvaovao-ia.iam.gserviceaccount.com` | `run.admin`, `iam.serviceAccountUser`, `artifactregistry.writer`, `storage.objectAdmin` |
+| `SA_COMPUTE` | `97374817504-compute@developer.gserviceaccount.com` | Default compute SA — `storage.objectAdmin`, `artifactregistry.reader` |
+
+#### GitHub
+
+| Variable | Current value |
+|---|---|
+| `GITHUB_REPO` | `https://github.com/mgvaovao-Mdn/ml.git` |
+| `GITHUB_USER` | `guillaume1146` |
+
+#### Application environment variables (set on Cloud Run)
+
+| Variable | Value | Description |
+|---|---|---|
+| `MGVAOVAO_DEVICE` | `cuda` | Force GPU inference |
+| `MGVAOVAO_WHISPER_MODEL_SIZE` | `small` | ASR model size |
+| `MGVAOVAO_CHECKPOINTS_BUCKET` | `mgvaovao-ia-checkpoints` | GCS bucket for checkpoints |
+| `MGVAOVAO_VAD_THRESHOLD` | `0.3` | VAD speech detection threshold |
+| `MGVAOVAO_VAD_STREAM_MIN_SILENCE_MS` | `400` | Silence duration to trigger pipeline |
+
+---
+
+### 18.11 — Migration to a New GCP Project
+
+Follow this checklist when migrating the entire system to a new GCP account or project.
 
 ```
-gs://mgvaovao-models/
-├── nllb_lora_v1/               NLLB LoRA adapter (~200 MB)
-├── nllb_lora_betsileo_v1/
-├── mms_tts_plt_latn_v1/        TTS checkpoint (~145 MB)
-└── mms_tts_betsileo_v1/
+STEP 1 — New project
+  □ Create new GCP project with billing enabled
+  □ Note new PROJECT_ID and PROJECT_NUMBER
 
-gs://mgvaovao-datasets/
-├── raw/                        Annotator uploads (JSONL + WAV)
-├── processed/                  Train/val/test splits
-├── reference/
-│   └── eval_fixed_200.csv      Fixed evaluation set (drift monitoring)
-└── eval_fixed/
+STEP 2 — Enable APIs (§18.1 Step 4)
+  □ Run: gcloud services enable run.googleapis.com artifactregistry.googleapis.com
+         cloudbuild.googleapis.com storage.googleapis.com aiplatform.googleapis.com ...
+
+STEP 3 — Artifact Registry (§18.1 Step 5)
+  □ Create repo: gcloud artifacts repositories create mgvaovao --format=docker --location=us-central1
+
+STEP 4 — GCS Buckets (§18.1 Step 6)
+  □ Create bucket: gcloud storage buckets create gs://{NEW_PROJECT}-checkpoints --location=us-central1
+  □ Update MGVAOVAO_CHECKPOINTS_BUCKET in Dockerfile.cloudrun (line: ENV MGVAOVAO_CHECKPOINTS_BUCKET=...)
+  □ Update GCS_BUCKET_MODELS in .env
+
+STEP 5 — Service accounts & IAM (§18.1 Step 7)
+  □ Create cloudbuild-runner SA
+  □ Grant roles: run.admin, iam.serviceAccountUser, artifactregistry.writer, storage.objectAdmin
+  □ Grant default Cloud Build SA: run.admin, iam.serviceAccountUser
+
+STEP 6 — Transfer checkpoints
+  □ Download from old bucket: gsutil -m cp -r gs://mgvaovao-ia-checkpoints/ ./checkpoints-backup/
+  □ Upload to new bucket:     gsutil -m cp -r ./checkpoints-backup/ gs://{NEW_PROJECT}-checkpoints/
+
+STEP 7 — Update code references
+  □ Search and replace old PROJECT_ID in: cloudbuild.yaml, cloudbuild-inference.yaml
+  □ Update .env with new GCP variables
+  □ Commit: git add -A && git commit -m "chore: migrate to new GCP project {NEW_PROJECT_ID}"
+
+STEP 8 — First build (§18.2)
+  □ Run: gcloud builds submit --config=cloudbuild-inference.yaml
+         --project={NEW_PROJECT_ID} --substitutions=SHORT_SHA=$(git rev-parse --short HEAD) .
+  □ Wait ~45-60 min for first build (model downloads — layer cache empty)
+  □ Verify build SUCCESS in Cloud Console
+
+STEP 9 — Verify deployment (§18.3)
+  □ Get new Cloud Run URL: gcloud run services describe mgvaovao-inference ...
+  □ Test: curl {NEW_URL}/health
+  □ Wait for /ready: curl {NEW_URL}/ready (may take 60-120 s on first cold start)
+  □ Open UI: {NEW_URL}/live — speak a phrase — verify translation appears
+
+STEP 10 — Update saved variables
+  □ Update .env with new CLOUDRUN_URL
+  □ Update any frontend/client code that hardcodes the Cloud Run URL
+  □ Update GitHub trigger if used (§18.7)
 ```
 
 ---
