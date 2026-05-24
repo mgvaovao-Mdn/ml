@@ -312,6 +312,38 @@
       overflow-y: auto;
     }
 
+    /* ── Speaker animation ───────────────────────────────────────────────── */
+    #speaker-anim {
+      display: none;
+      position: relative;
+      height: 80px;
+      margin-top: 1.2rem;
+      justify-content: center;
+      align-items: center;
+    }
+    #speaker-anim.active { display: flex; }
+
+    .s-icon {
+      font-size: 1.8rem;
+      position: relative;
+      z-index: 1;
+      animation: pulse .9s ease-in-out infinite;
+    }
+    .s-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 2px solid var(--green);
+      opacity: 0;
+      animation: s-ripple 1.5s ease-out infinite;
+    }
+    .s-ring:nth-child(1) { width: 48px;  height: 48px;  animation-delay: 0s; }
+    .s-ring:nth-child(2) { width: 72px;  height: 72px;  animation-delay: .5s; }
+    .s-ring:nth-child(3) { width: 96px;  height: 96px;  animation-delay: 1s; }
+    @keyframes s-ripple {
+      0%   { transform: scale(.5); opacity: .8; }
+      100% { transform: scale(1);  opacity: 0;  }
+    }
+
     /* ── Footer ──────────────────────────────────────────────────────────── */
     footer {
       margin-top: 1rem;
@@ -368,7 +400,7 @@
         <option value="pt">Portugais</option>
       </select>
     </div>
-    <button id="btn-toggle" disabled>🎙 Démarrer</button>
+    <button id="btn-toggle" disabled>⏹ Arrêter</button>
   </div>
 
   <!-- VAD meter -->
@@ -403,6 +435,14 @@
       <div class="label">Traduction malgache</div>
       <div class="text" id="el-translation">—</div>
     </div>
+  </div>
+
+  <!-- Speaker animation — visible pendant la lecture audio -->
+  <div id="speaker-anim">
+    <div class="s-ring"></div>
+    <div class="s-ring"></div>
+    <div class="s-ring"></div>
+    <span class="s-icon">🔊</span>
   </div>
 </div>
 

@@ -24,7 +24,7 @@ let sampleBuf = new Float32Array(0); // inter-chunk accumulator
 // ── DOM refs (populated in init()) ───────────────────────────────────────────
 let btnToggle, selDialect, selSrcLang;
 let elState, elProb, elTranscript, elTranslation, elLatency, elLog;
-let elLoadingOverlay, elLoadingMsg, elProcessingBanner;
+let elLoadingOverlay, elLoadingMsg, elProcessingBanner, elSpeakerAnim;
 
 // ── WebSocket ──────────────────────────────────────────────────────────────────
 
@@ -43,7 +43,7 @@ function connect() {
 
   ws.onopen    = () => { log("Connecté"); startMic(); };
   ws.onmessage = (e) => handleMessage(JSON.parse(e.data));
-  ws.onclose   = (e) => { log(`Déconnecté (${e.code})`); stopMic(); setBtn(false); elProcessingBanner.classList.remove("visible"); };
+  ws.onclose   = (e) => { log(`Déconnecté (${e.code})`); stopMic(); setBtn(false); elProcessingBanner.classList.remove("visible"); elSpeakerAnim.classList.remove("active"); };
   ws.onerror   = ()  => log("Erreur WebSocket");
 }
 
@@ -183,8 +183,15 @@ function playAudio(b64) {
   const blob   = new Blob([bytes], { type: "audio/wav" });
   const url    = URL.createObjectURL(blob);
   const player = new Audio(url);
-  player.onended = () => URL.revokeObjectURL(url);
-  player.play().catch((e) => log(`Playback error: ${e.message}`));
+  elSpeakerAnim.classList.add("active");
+  player.onended = () => {
+    URL.revokeObjectURL(url);
+    elSpeakerAnim.classList.remove("active");
+  };
+  player.play().catch((e) => {
+    log(`Erreur lecture : ${e.message}`);
+    elSpeakerAnim.classList.remove("active");
+  });
 }
 
 // ── Latency table ─────────────────────────────────────────────────────────────
@@ -206,7 +213,7 @@ function renderLatency(lms) {
 // ── Button & log helpers ──────────────────────────────────────────────────────
 
 function setBtn(active) {
-  btnToggle.textContent = active ? "⏹ Arrêter" : "🎙 Démarrer";
+  btnToggle.textContent = active ? "⏹ Arrêter l'écoute" : "🎙 Reprendre l'écoute";
   btnToggle.classList.toggle("active", active);
   selDialect.disabled = active;
   selSrcLang.disabled = active;
@@ -239,7 +246,8 @@ async function checkReady() {
     if (res.ok) {
       elLoadingOverlay.classList.add("hidden");
       btnToggle.disabled = false;
-      log("Modèles chargés — prêt.");
+      log("Modèles chargés — démarrage automatique de l'écoute…");
+      connect();
     } else {
       elLoadingMsg.textContent = "Chargement des modèles en cours…";
       setTimeout(checkReady, 3000);
@@ -261,9 +269,10 @@ function init() {
   elTranslation    = document.getElementById("el-translation");
   elLatency        = document.getElementById("el-latency");
   elLog            = document.getElementById("el-log");
-  elLoadingOverlay = document.getElementById("loading-overlay");
-  elLoadingMsg     = document.getElementById("loading-msg");
+  elLoadingOverlay   = document.getElementById("loading-overlay");
+  elLoadingMsg       = document.getElementById("loading-msg");
   elProcessingBanner = document.getElementById("processing-banner");
+  elSpeakerAnim      = document.getElementById("speaker-anim");
 
   btnToggle.addEventListener("click", () => {
     if (!recording) {
