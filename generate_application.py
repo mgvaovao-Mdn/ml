@@ -155,7 +155,7 @@ field(doc, "Prénom :", "Fenitra")
 field(doc, "Nom :", "Ravelomanantsoa")
 field(doc, "Email :", "fenitra@google.com")
 field(doc, "Téléphone :", "+261 38 37 773 93")
-field(doc, "Rôle dans l'organisation :", "Fondateur et Directeur général")
+field(doc, "Rôle dans l'organisation :", "Fondateur et Président")
 
 doc.add_page_break()
 
@@ -167,9 +167,9 @@ h1(doc, "Détails de la proposition")
 # ── Q1a ───────────────────────────────────────────────────────────────────────
 qlabel(doc, "Question 1(a) — Catégorie(s) de candidature")
 para(doc,
-    "Catégories cochées : Catégorie 1 — Création de données, "
-    "Catégorie 2 — Développement de modèles et d'outils et "
-    "Catégorie 3 — Applications sectorielles.\n\n"
+    "Catégories cochées : Catégorie 1 (Création de données), "
+    "Catégorie 2 (Développement de modèles et d'outils) et "
+    "Catégorie 3 (Applications sectorielles).\n\n"
     "Ce projet porté par MGVaovao - Maison du Numérique ne relève pas d'une catégorie principale "
     "unique car il constitue un pipeline complet et indissociable dans lequel les trois dimensions "
     "sont de poids égal. La Catégorie 1 correspond à la constitution systématique des premiers "
@@ -188,8 +188,8 @@ para(doc,
 qlabel(doc, "Question 1(b) — Titre du projet et résumé (300 mots max)")
 para(doc,
     "Titre du projet :\n"
-    "Traduction multilingue parole-vers-parole en temps réel vers 18 dialectes malgaches — "
-    "une infrastructure d'IA ouverte au service de l'inclusion linguistique")
+    "Traduction multilingue parole-vers-parole en temps réel vers 18 dialectes malgaches, "
+    "constituant ainsi une infrastructure d'IA ouverte au service de l'inclusion linguistique")
 para(doc,
     "Résumé :\n\n"
     "Madagascar est une île-continent où 28 millions d'habitants parlent un malgache profondément "
@@ -199,8 +199,8 @@ para(doc,
     "aux services de santé et aux ressources civiques.\n\n"
     "MGVaovao - Maison du Numérique est l'organisation qui porte ce projet. Elle développe, "
     "depuis Antananarivo, un système de traduction parole-vers-parole en temps réel conçu pour "
-    "convertir automatiquement la parole en six langues internationales — le français, l'anglais, "
-    "l'allemand, l'espagnol, l'italien et le portugais — en parole malgache naturelle dans le "
+    "convertir automatiquement la parole en six langues internationales, à savoir le français, l'anglais, "
+    "l'allemand, l'espagnol, l'italien et le portugais, en parole malgache naturelle dans le "
     "dialecte choisi par l'utilisateur.\n\n"
     "Un premier proof of concept couvrant quatre dialectes est fonctionnel depuis avril 2026, "
     "avec une latence inférieure à cinq secondes, sur Cloud Run GPU. Ce prototype démontre la "
@@ -210,10 +210,10 @@ para(doc,
     "Le soutien de LINGUA Africa permettra d'étendre la couverture aux 14 dialectes restants, de "
     "constituer les premières ressources linguistiques vocales ouvertes pour l'ensemble du malgache "
     "dialectal, et de déployer ce service dans les programmes d'éducation, de santé et d'inclusion "
-    "civique de MGVaovao - Maison du Numérique — nominée au prix RSE de l'Année 2026 du CEO "
-    "Summit Indian Ocean —, un centre communautaire qui a touché plus de 5 500 bénéficiaires "
+    "civique de MGVaovao - Maison du Numérique, nominée au prix RSE de l'Année 2026 du CEO "
+    "Summit Indian Ocean de la 2e édition. Ce centre communautaire a touché plus de 5 500 bénéficiaires "
     "uniques (48 % de femmes, de 7 à 65 ans, accès entièrement gratuit) et accompagné 2 366 "
-    "personnes certifiées depuis son inauguration en février 2024.")
+    "personnes formées depuis son inauguration en février 2024.")
 
 # ── Q2 ────────────────────────────────────────────────────────────────────────
 qlabel(doc, "Question 2 — Justification de la proposition et objectifs (750 mots max)")
@@ -253,16 +253,16 @@ para(doc,
     "population estimée à plus de quinze millions de personnes. Les bénéficiaires indirects "
     "incluent les prestataires de services éducatifs, sanitaires et civiques. Parmi les programmes "
     "actifs de la Maison du Numérique figurent l'inclusion numérique des enfants porteurs de "
-    "trisomie 21 — 28 enfants accompagnés sur trois cohortes en partenariat avec Down Syndrome "
-    "Madagascar — et le programme Ampela Online, créé en partenariat avec Yas, dédié à "
+    "trisomie 21, avec 28 enfants accompagnés sur trois cohortes en partenariat avec Down Syndrome "
+    "Madagascar, et le programme Ampela Online, créé en partenariat avec Yas, dédié à "
     "l'entrepreneuriat féminin, des initiatives qui illustrent que la mission de l'organisation "
     "embrasse toutes les formes d'exclusion.\n\n"
     "L'équipe portant ce projet est ancrée localement et compétente techniquement à un niveau "
     "international. Fenitra Ravelomanantsoa, fondateur de Madagasikara Vaovao, est Head of Cloud "
-    "Regulatory Affairs chez Google à Zurich — l'un des premiers Malgaches à accéder à des "
+    "Regulatory Affairs chez Google à Zurich, l'un des premiers Malgaches à accéder à des "
     "fonctions de direction stratégique chez Google. Il intervient régulièrement dans les grands "
-    "forums internationaux sur la gouvernance de l'IA — dont le CEO Summit Indian Ocean "
-    "(avril 2026), où il est également candidat au prix CEO de l'Année — et la modernisation "
+    "forums internationaux sur la gouvernance de l'IA, notamment au CEO Summit Indian Ocean "
+    "(avril 2026), où il est également candidat au prix CEO de l'Année, et sur la modernisation "
     "des infrastructures publiques par le Cloud. Norolala Randrianarison assure la direction "
     "opérationnelle quotidienne. "
     "Guillaume Rakotonjanahary Tsantaniaina et Karine Maholisoa Rajaofera dirigent chacun un volet "
@@ -311,22 +311,21 @@ para(doc,
 qlabel(doc, "Question 4 — Domaines et sous-domaines (300 mots max)")
 para(doc,
     "Ce projet de traduction dialectale porté par MGVaovao - Maison du Numérique se déploie à "
-    "l'intersection de trois domaines prioritaires définis par LINGUA Africa.\n\n"
+    "l'intersection de deux domaines prioritaires définis par LINGUA Africa.\n\n"
     "Le premier est l'éducation. La Maison du Numérique a accompagné plus de 5 500 bénéficiaires "
-    "uniques dans ses programmes de formation numérique, dont 2 366 personnes certifiées via "
-    "e-jery, ANKY et Madagascar DataCamp. De façon encore plus remarquable, la Maison du Numérique "
-    "a développé un programme d'inclusion numérique pour les enfants porteurs de trisomie 21 — "
-    "28 enfants accompagnés en partenariat avec Down Syndrome Madagascar — et le programme Ampela "
-    "Online pour l'entrepreneuriat féminin, des initiatives qui témoignent d'une conception "
-    "radicalement inclusive du numérique. L'intégration d'un système de traduction dialectale dans ces programmes "
-    "permettra de s'adresser aux apprenants dans leur variété linguistique maternelle, améliorant "
-    "ainsi la compréhension et l'engagement. Les sous-domaines ciblés comprennent l'alphabétisation "
-    "numérique, l'éducation de base et l'éducation spécialisée.\n\n"
-    "Le deuxième est la santé publique. En partenariat avec des acteurs de santé communautaire, le "
-    "système permettra de diffuser des messages de prévention couvrant la santé maternelle et "
-    "infantile, la vaccination et la gestion des épidémies dans les dialectes des régions "
-    "concernées.\n\n"
-    "Le troisième est l'inclusion civique et numérique. Le système permettra à des citoyens non "
+    "uniques dans ses programmes de formation numérique, dont 2 366 personnes formées, à savoir "
+    "e-jery (inclusion numérique des enfants vulnérables), ANKY (développement personnel et "
+    "entrepreneuriat) et Madagascar DataCamp (formation Excel de base pour les étudiants). "
+    "De façon encore plus remarquable, la Maison du Numérique "
+    "a développé un programme d'inclusion numérique pour les enfants porteurs de trisomie 21, "
+    "28 enfants accompagnés en partenariat avec Down Syndrome Madagascar, et le programme Ampela "
+    "Online, créé en partenariat avec Yas, pour l'entrepreneuriat féminin en ligne, des initiatives "
+    "qui témoignent d'une conception radicalement inclusive du numérique. L'intégration d'un "
+    "système de traduction dialectale dans ces programmes permettra de s'adresser aux apprenants "
+    "dans leur variété linguistique maternelle, améliorant ainsi la compréhension et l'engagement. "
+    "Les sous-domaines ciblés comprennent l'alphabétisation numérique, l'éducation de base et "
+    "l'éducation spécialisée.\n\n"
+    "Le deuxième est l'inclusion civique et numérique. Le système permettra à des citoyens non "
     "locuteurs du malgache officiel d'accéder à des informations sur les services publics, les "
     "droits civiques et les ressources gouvernementales dans leur dialecte. Ce besoin est "
     "particulièrement aigu dans les zones rurales, où les barrières linguistiques constituent le "
@@ -520,8 +519,8 @@ para(doc,
     "dans ses propres outils. L'API gère l'authentification, la sélection du dialecte cible, la "
     "validation des entrées audio et la remontée d'erreurs structurées. Le code source complet est "
     "publié sur github.com/mgvaovao-Mdn/backend_ia sous licence Apache 2.0.\n\n"
-    "Par-dessus cette API, une interface temps réel — WebRTC pour les accès navigateur ou "
-    "WebSocket pour les intégrations partenaires — permet des sessions de traduction interactive "
+    "Par-dessus cette API, une interface temps réel, via WebRTC pour les accès navigateur ou "
+    "WebSocket pour les intégrations partenaires, permet des sessions de traduction interactive "
     "à moins de cinq secondes de latence. La détection de fin de phrase s'appuie sur Silero VAD, "
     "déjà intégré au pipeline, qui segmente le flux audio entrant en fenêtres de 32 ms et "
     "déclenche chaque cycle de traduction dès la fin d'une phrase, sans intervention de "
@@ -602,10 +601,10 @@ para(doc,
     "les 55 ans et plus. Les coordinateurs locaux sont eux-mêmes membres des communautés ciblées. "
     "L'engagement de la Maison du Numérique pour l'inclusion va au-delà du genre et de l'âge : "
     "l'organisation conduit déjà un programme spécifique d'inclusion numérique pour les enfants "
-    "porteurs de trisomie 21 — 28 enfants accompagnés en partenariat avec Down Syndrome Madagascar "
-    "— et le programme Ampela Online, créé en partenariat avec Yas, pour l'entrepreneuriat "
-    "féminin, ce qui témoigne de façon tangible que l'équité et l'inclusion sont des pratiques "
-    "quotidiennes documentées.\n\n"
+    "porteurs de trisomie 21, avec 28 enfants accompagnés en partenariat avec Down Syndrome Madagascar, "
+    "et le programme Ampela Online, créé en partenariat avec Yas, pour l'entrepreneuriat "
+    "féminin en ligne, ce qui témoigne de façon tangible que l'équité et l'inclusion sont des "
+    "pratiques quotidiennes documentées.\n\n"
     "Sur les licences et l'ouverture, tous les livrables produits sont publiés sous des licences "
     "pleinement ouvertes : Apache 2.0 pour les modèles et le code, Creative Commons BY 4.0 pour "
     "les données.\n\n"
@@ -623,17 +622,18 @@ para(doc,
 # ── Q13 ───────────────────────────────────────────────────────────────────────
 qlabel(doc, "Question 13(a) — Candidature en consortium ?")
 para(doc,
-    "Non. MGVaovao - Maison du Numérique (Madagasikara Vaovao) soumet cette proposition en tant "
-    "qu'organisation principale. Le projet s'appuie sur un réseau de partenaires opérationnels "
-    "établis — e-jery, ANKY, Madagascar DataCamp et Down Syndrome Madagascar — mais ceux-ci "
-    "interviennent comme partenaires et non comme co-candidats formels. Des lettres de soutien "
-    "peuvent être fournies sur demande.")
+    "Non. MGVaovao - Maison du Numérique (Programme de l'association Madagasikara Vaovao) soumet "
+    "cette proposition en tant qu'organisation principale. Le projet s'appuie sur un réseau de "
+    "partenaires opérationnels établis, notamment YAS Madagascar, e-jery, ANKY, Madagascar DataCamp "
+    "et Down Syndrome Madagascar, mais ceux-ci interviennent comme partenaires et non comme "
+    "co-candidats formels. Des lettres de soutien peuvent être fournies sur demande.")
 
 # ── Q14 ───────────────────────────────────────────────────────────────────────
 qlabel(doc, "Question 14 — Lettres de soutien et documentation complémentaire")
 para(doc,
     "Des lettres de soutien peuvent être sollicitées auprès des partenaires opérationnels de la "
-    "Maison du Numérique, notamment e-jery (formation numérique, 1 483 personnes certifiées), "
+    "Maison du Numérique, notamment YAS Madagascar (programme Ampela Online, entrepreneuriat féminin en ligne), "
+    "e-jery (formation numérique, 1 483 personnes formées), "
     "ANKY (472), Madagascar DataCamp (411) et Down Syndrome Madagascar (programme trisomie 21). "
     "Ces partenariats sont actifs et documentés depuis l'inauguration de la Maison du Numérique "
     "en février 2024.\n\n"
@@ -649,10 +649,10 @@ para(doc,
 # ── Q15 ───────────────────────────────────────────────────────────────────────
 qlabel(doc, "Question 15 — Membres de l'équipe et rôles (400 mots max)")
 
-subh(doc, "Fenitra Ravelomanantsoa — Fondateur et Directeur général de MGVaovao - Maison du Numérique")
+subh(doc, "Fenitra Ravelomanantsoa — Fondateur et Président de MGVaovao - Maison du Numérique")
 para(doc,
-    "Head of Cloud Regulatory Affairs chez Google à Zurich — l'un des premiers Malgaches à "
-    "accéder à des fonctions de direction stratégique chez Google —, Fenitra supervise la conformité "
+    "Head of Cloud Regulatory Affairs chez Google à Zurich, il est l'un des premiers Malgaches à "
+    "accéder à des fonctions de direction stratégique chez Google. Fenitra supervise la conformité "
     "réglementaire des infrastructures cloud à l'échelle internationale. Intervenant au CEO "
     "Summit Indian Ocean (avril 2026) et candidat au prix CEO de l'Année, il a fondé "
     "l'association Madagasikara Vaovao et MGVaovao - Maison du Numérique en novembre 2023 sur "
@@ -661,12 +661,14 @@ para(doc,
     "numérique pour les communautés malgaches. Il supervise la stratégie globale, les "
     "partenariats institutionnels et la gouvernance éthique du projet.")
 
-subh(doc, "Norolala Randrianarison — Directrice locale et Responsable des opérations")
+subh(doc, "Norolala Randrianarison — Directrice de la Maison du Numérique")
 para(doc,
-    "Professionnelle du secteur des télécommunications et du numérique à Madagascar, Mme Noro "
-    "assure la direction opérationnelle de la Maison du Numérique au quotidien. Elle supervise "
-    "l'accueil des communautés, le déploiement des programmes, la coordination des bénévoles et "
-    "la relation avec les partenaires institutionnels locaux.")
+    "Professionnelle du secteur des télécommunications et du numérique à Madagascar, elle assure "
+    "la direction opérationnelle de la Maison du Numérique au quotidien. Elle supervise "
+    "l'accueil des communautés, le déploiement des programmes, la gestion et formation des "
+    "bénévoles et la relation avec les partenaires institutionnels locaux. Aussi, elle est "
+    "gestionnaire de projets et du management d'équipes pluridisciplinaires, avec une expertise "
+    "dans l'accompagnement et l'encadrement des jeunes professionnels.")
 
 subh(doc, "Guillaume Rakotonjanahary Tsantaniaina — Chef de projet technique — ML et Développement")
 para(doc,
@@ -698,9 +700,7 @@ para(doc,
     "équipes terrain et traduit les besoins métier en spécifications fonctionnelles pour le "
     "pipeline technique. Maîtrisant les outils bureautiques et collaboratifs tels que Word, "
     "Excel, Google Sheets et l'ensemble des plateformes Google, elle assure l'interface entre "
-    "les réalités opérationnelles du terrain et le volet technique. Elle pilote également le "
-    "programme d'inclusion numérique des enfants porteurs de trisomie 21 (28 enfants accompagnés "
-    "en partenariat avec Down Syndrome Madagascar) à la Maison du Numérique.")
+    "les réalités opérationnelles du terrain et le volet technique.")
 
 subh(doc, "Chef de projet partenariats et impact (à recruter) · Coordinateurs locaux (14, à recruter)")
 para(doc,
@@ -734,8 +734,8 @@ para(doc,
     "5 500 bénéficiaires uniques depuis son inauguration de février 2024, 2 366 personnes "
     "formées et certifiées via e-jery (1 483), ANKY (472) et Madagascar DataCamp (411), et "
     "28 enfants porteurs de trisomie 21 accompagnés en partenariat avec Down Syndrome Madagascar. "
-    "Nominée au prix RSE de l'Année 2026 (CEO Summit Indian Ocean), MGVaovao bénéficie d'une "
-    "reconnaissance externe de son impact social.")
+    "Nominée au prix RSE de l'Année 2026 en avril 2026 lors de la 2e édition du CEO Summit "
+    "Indian Ocean, MGVaovao bénéficie d'une reconnaissance externe de son impact social.")
 
 doc.add_page_break()
 
@@ -768,8 +768,8 @@ para(doc,
     "un fondateur à mi-temps ainsi qu'une directrice locale, un chef de projet technique ML, "
     "un chef de projet data et opérations et un chef de projet partenariats démarrant au mois 7, "
     "chacun rémunéré à 1 333 USD par mois (6 000 000 MGA). L'équipe technique regroupe sept "
-    "développeurs spécialisés — backend, frontend, mobile, IA/ML, data scientist, DevOps et data "
-    "engineer — rémunérés à 333 USD par mois (1 500 000 MGA) chacun.\n\n"
+    "développeurs spécialisés, à savoir backend, frontend, mobile, IA/ML, data scientist, DevOps et data "
+    "engineer, rémunérés à 333 USD par mois (1 500 000 MGA) chacun.\n\n"
     "Le poste collecte et traitement des données (14 231 USD) couvre vingt collecteurs terrain "
     "actifs pendant quatre mois à 133 USD/mois ainsi que neuf annotateurs-transcripteurs actifs "
     "pendant trois mois au même tarif.\n\n"
@@ -875,6 +875,6 @@ note(doc,
     "NOTE 5 — Q9 longueur : la section méthodologie dépasse légèrement 1 000 mots avec le "
     "quatrième pilier. Résumez si le formulaire impose un comptage strict.")
 
-output_path = r"C:\mgvaovao\LINGUA_Africa_Candidature_MGVaovao.docx"
+output_path = r"C:\Github Repositories\mgvaovao\LINGUA_Africa_Candidature_MGVaovao_FINAL_FR.docx"
 doc.save(output_path)
 print(f"Fichier sauvegardé : {output_path}")

@@ -1,0 +1,10 @@
+name: deploy-inference-on-push
+description: "Auto-deploy inference image to Cloud Run on push to main"
+tags:
+  - inference
+  - cloudrun
+repositoryEventConfig:
+  repository: projects/mgvaovao-ia/locations/us-central1/connections/mgvaovao-github/repositories/ml-repo
+  push:
+    branch: "^main$"
+filename: cloudbuild-inference.yaml

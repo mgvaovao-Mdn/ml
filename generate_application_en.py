@@ -155,7 +155,7 @@ field(doc, "First Name:", "Fenitra")
 field(doc, "Last Name:",  "Ravelomanantsoa")
 field(doc, "Email:",      "fenitra@google.com")
 field(doc, "Phone:",      "+261 38 37 773 93")
-field(doc, "Role:",       "Founder and Executive Director")
+field(doc, "Role:",       "Founder and President")
 
 doc.add_page_break()
 
@@ -167,8 +167,8 @@ h1(doc, "Full Proposal Details")
 # ── Q1a ───────────────────────────────────────────────────────────────────────
 qlabel(doc, "Question 1(a) — Category / Categories")
 para(doc,
-    "Categories selected: Category 1 — Data Creation, Category 2 — Model and Tool Development, "
-    "and Category 3 — Sectoral Applications.\n\n"
+    "Categories selected: Category 1 (Data Creation), Category 2 (Model and Tool Development) "
+    "and Category 3 (Sectoral Applications).\n\n"
     "This project, carried by MGVaovao - Maison du Numérique, does not fall under a single "
     "primary category because it constitutes a complete and inseparable pipeline in which all "
     "three dimensions carry equal weight. Category 1 covers the systematic constitution of the "
@@ -186,7 +186,7 @@ para(doc,
 qlabel(doc, "Question 1(b) — Project Title and Summary (300-word limit)")
 para(doc,
     "Project Title:\n"
-    "Real-Time Multilingual Speech-to-Speech Translation into 18 Malagasy Dialects — "
+    "Real-Time Multilingual Speech-to-Speech Translation into 18 Malagasy Dialects, "
     "an Open AI Infrastructure for Linguistic Inclusion")
 para(doc,
     "Summary:\n\n"
@@ -197,20 +197,20 @@ para(doc,
     "civic resources.\n\n"
     "MGVaovao - Maison du Numérique is the organisation carrying this project. It is developing, "
     "from Antananarivo, a real-time speech-to-speech translation system designed to automatically "
-    "convert spoken input in six international languages — French, English, German, Spanish, "
-    "Italian, and Portuguese — into natural Malagasy speech in the dialect chosen by the user.\n\n"
+    "convert spoken input in six international languages (French, English, German, Spanish, "
+    "Italian, and Portuguese) into natural Malagasy speech in the dialect chosen by the user.\n\n"
     "A first working proof of concept covering four dialects has been operational since April 2026, "
     "with end-to-end latency under five seconds, on Cloud Run GPU. This prototype demonstrates "
     "the technical feasibility of the approach and constitutes a concrete foundation to be improved "
-    "and extended — not a finalised system or a fully deployed production solution. Since the "
+    "and extended, not a finalised system or a fully deployed production solution. Since the "
     "project launch at end of 2025, the team has already compiled approximately 1,000 data pairs, "
     "confirming the operational feasibility of the collection process.\n\n"
     "LINGUA Africa support will allow us to extend coverage to the remaining 14 dialects, "
     "build the first open vocal resources for the full Malagasy dialect continuum, and deploy "
     "this service within the education, health, and civic inclusion programmes of MGVaovao - "
-    "Maison du Numérique — shortlisted for the RSE de l'Année 2026 Award (CEO Summit Indian "
-    "Ocean) —, a community centre that has reached over 5,500 unique beneficiaries (48% women, "
-    "aged 7 to 65, entirely free of charge) and accompanied 2,366 certified people since its "
+    "Maison du Numérique, shortlisted for the RSE de l'Année 2026 Award (2nd edition of the CEO Summit Indian "
+    "Ocean), a community centre that has reached over 5,500 unique beneficiaries (48% women, "
+    "aged 7 to 65, entirely free of charge) and accompanied 2,366 trained people since its "
     "inauguration in February 2024.")
 
 # ── Q2 ────────────────────────────────────────────────────────────────────────
@@ -223,7 +223,7 @@ para(doc,
     "(the Merina variety, plt_Latn) is the administrative and media language, yet millions of "
     "Malagasy speakers in the Betsileo, Betsimisaraka, Sakalava, Antandroy, and many other "
     "regions can only access digital, educational, and health services through a language that "
-    "is not their own — or cannot access them at all.\n\n"
+    "is not their own, or simply cannot access them at all.\n\n"
     "This imbalance is compounded by a persistent digital divide. When a Betsileo farmer "
     "searches for information on drought-resistant seeds, when a Betsimisaraka mother tries "
     "to understand maternal health guidelines, or when a Sakalava citizen wants to access an "
@@ -240,23 +240,23 @@ para(doc,
     "sustained community dynamic where native speakers participate in data collection, "
     "validation, and evaluation.\n\n"
     "To date, fewer than ten published academic works address the computational processing of "
-    "Malagasy in its dialectal diversity. Major multilingual datasets — Common Voice, FLORES-200, "
-    "OPUS — contain data for Official Malagasy, but nothing for its regional varieties. "
+    "Malagasy in its dialectal diversity. Major multilingual datasets such as Common Voice, FLORES-200, "
+    "and OPUS contain data for Official Malagasy, but nothing for its regional varieties. "
     "MGVaovao - Maison du Numérique is creating these resources for the first time, with "
     "rigour, within a community framework, and under fully open licences.\n\n"
     "The direct beneficiaries are the speakers of under-represented Malagasy dialects, a "
     "population estimated at over fifteen million people. Among Maison du Numérique's active "
-    "programmes are a digital inclusion initiative for children with Down syndrome (trisomy 21) "
-    "— 28 children accompanied across three cohorts in partnership with Down Syndrome Madagascar "
-    "— and the Ampela Online programme, developed in partnership with Yas, for women's "
+    "programmes are a digital inclusion initiative for children with Down syndrome (trisomy 21), "
+    "with 28 children accompanied across three cohorts in partnership with Down Syndrome Madagascar, "
+    "and the Ampela Online programme, developed in partnership with Yas, for women's "
     "entrepreneurship, concrete demonstrations that the organisation's mission extends to every "
     "form of exclusion.\n\n"
     "The team carrying this project is deeply locally rooted and technically capable at an "
     "international level. Fenitra Ravelomanantsoa, founder of Madagasikara Vaovao, is Head of "
-    "Cloud Regulatory Affairs at Google in Zurich — one of the first Malagasy professionals to "
+    "Cloud Regulatory Affairs at Google in Zurich, one of the first Malagasy professionals to "
     "reach a senior leadership position at Google. He regularly speaks at major international forums on "
-    "AI governance — including the CEO Summit Indian Ocean (April 2026), where he is also a "
-    "candidate for the CEO of the Year award — and the modernisation of public infrastructure "
+    "AI governance, including the CEO Summit Indian Ocean (April 2026), where he is also a "
+    "candidate for the CEO of the Year award, and on the modernisation of public infrastructure "
     "through Cloud. "
     "Norolala Randrianarison handles day-to-day operational management. Guillaume Rakotonjanahary "
     "Tsantaniaina and Karine Maholisoa Rajaofera each lead a complementary strand of the project. "
@@ -282,8 +282,8 @@ para(doc,
     "remarkable richness and complexity that is almost entirely absent from existing AI systems.\n\n"
     "Official Malagasy (plt_Latn, the Merina variety) is the only form that today enjoys even "
     "a minimal presence in multilingual corpora such as FLORES-200 and Common Voice. The "
-    "seventeen regional dialects — including Betsileo, Betsimisaraka, Sakalava, Antandroy, "
-    "Tsimihety, Vezo, Bara, Sihanaka, Antakarana, Makoa, and Antaisaka — have no representation "
+    "seventeen regional dialects, including Betsileo, Betsimisaraka, Sakalava, Antandroy, "
+    "Tsimihety, Vezo, Bara, Sihanaka, Antakarana, Makoa, and Antaisaka, have no representation "
     "whatsoever in the global NLP ecosystem.\n\n"
     "Three converging reasons justify this choice. First, this is a documented and measurable "
     "gap: no validated dialectal speech corpus, no production NLP model, and no open dialectal "
@@ -301,22 +301,20 @@ para(doc,
 # ── Q4 ────────────────────────────────────────────────────────────────────────
 qlabel(doc, "Question 4 — Domains and Subdomains (300-word limit)")
 para(doc,
-    "This dialectal translation project operates at the intersection of three priority domains "
+    "This dialectal translation project operates at the intersection of two priority domains "
     "defined by LINGUA Africa.\n\n"
     "The first domain is education. Maison du Numérique has reached over 5,500 unique "
-    "beneficiaries through its digital literacy programmes, with 2,366 people trained and "
-    "certified via e-jery, ANKY, and Madagascar DataCamp. Most significantly, Maison du "
-    "Numérique runs a digital inclusion programme for children with Down syndrome (trisomy 21) "
-    "— 28 children accompanied in partnership with Down Syndrome Madagascar — and the Ampela "
-    "Online programme for women's entrepreneurship, initiatives that demonstrate a radically "
-    "inclusive vision of digital access. Integrating a dialectal translation system "
-    "allows trainers to address learners in their native linguistic variety, improving "
-    "comprehension and engagement. Targeted sub-domains include digital literacy, foundational "
-    "education, and special needs education.\n\n"
-    "The second domain is public health. In partnership with community health actors, the system "
-    "will enable the dissemination of prevention messages covering maternal and child health, "
-    "vaccination, and epidemic management, in the dialects of the regions concerned.\n\n"
-    "The third domain is civic and digital inclusion. The system will enable citizens who do "
+    "beneficiaries through its digital literacy programmes, with 2,366 people trained through "
+    "e-jery (digital inclusion for vulnerable children), ANKY (personal development and "
+    "entrepreneurship training), and Madagascar DataCamp (basic Excel training for students). "
+    "Most significantly, Maison du Numérique runs a digital inclusion programme for children "
+    "with Down syndrome (trisomy 21), with 28 children accompanied in partnership with Down Syndrome "
+    "Madagascar, and the Ampela Online programme, developed in partnership with Yas, for women's "
+    "online entrepreneurship, initiatives that demonstrate a radically inclusive vision of digital "
+    "access. Integrating a dialectal translation system allows trainers to address learners in "
+    "their native linguistic variety, improving comprehension and engagement. Targeted sub-domains "
+    "include digital literacy, foundational education, and special needs education.\n\n"
+    "The second domain is civic and digital inclusion. The system will enable citizens who do "
     "not speak Official Malagasy to access information on public services, civic rights, and "
     "government resources in their dialect. This need is particularly acute in rural areas, "
     "where language barriers are the primary obstacle to information access.")
@@ -329,7 +327,7 @@ para(doc,
     "Type of data: audio recordings of natural and read speech, in WAV 16 kHz mono format, "
     "produced by native speakers of each target dialect, paired with orthographic transcriptions "
     "validated by a second native speaker. The texts used for guided readings are adapted to the "
-    "project's priority domains — education, community health, civic services — ensuring the "
+    "project's priority domains (education, community health, and civic services), ensuring the "
     "data is both linguistically representative and immediately useful for the intended use cases. "
     "Since the project launch at end of 2025, approximately 1,000 data pairs have already been "
     "compiled for the initial dialects, providing concrete proof that the collection protocol "
@@ -339,8 +337,8 @@ para(doc,
     "remaining dialects represent a target corpus of approximately 2,100 to 2,800 hours of "
     "recordings and 140,000 audio-transcription pairs.\n\n"
     "Collection approach: data collection will be organised in partnership with local "
-    "coordinators in each linguistic region — Fianarantsoa for Betsileo, Toamasina for "
-    "Betsimisaraka, Mahajanga for Sakalava, Ambovombe for Antandroy, Mandritsara for "
+    "coordinators in each linguistic region, namely Fianarantsoa for Betsileo, Toamasina for "
+    "Betsimisaraka, Mahajanga for Sakalava, Ambovombe for Antandroy, and Mandritsara for "
     "Tsimihety. Coordinators are recruited from within the communities themselves, with "
     "priority given to women, trained in the collection protocol, and fairly compensated.\n\n"
     "Openness: all produced data will be published under Creative Commons BY 4.0 on HuggingFace "
@@ -400,8 +398,8 @@ para(doc,
     "immediately receives an audio response in their Malagasy dialect. This kiosk is used "
     "during onboarding sessions for new learners, in training workshops, and in community "
     "information drop-in sessions. The second interface is a public, documented API accessible "
-    "to institutional partners — community health services, literacy associations, NGOs, and "
-    "social support organisations — wishing to integrate dialectal communication capability "
+    "to institutional partners such as community health services, literacy associations, NGOs, and "
+    "social support organisations wishing to integrate dialectal communication capability "
     "into their own tools.\n\n"
     "The expected impact is structured around four axes. In education, the system allows "
     "trainers to address learners in their native variety, improving comprehension and reducing "
@@ -505,8 +503,8 @@ para(doc,
     "service into their own tools. The API handles authentication, target dialect selection, "
     "audio input validation, and structured error responses. The full source code is published "
     "at github.com/mgvaovao-Mdn/backend_ia under Apache 2.0.\n\n"
-    "On top of this API, a real-time interface — WebRTC for browser-based access or WebSocket "
-    "for partner integrations — enables interactive translation sessions with under five seconds "
+    "On top of this API, a real-time interface (WebRTC for browser-based access or WebSocket "
+    "for partner integrations) enables interactive translation sessions with under five seconds "
     "of end-to-end latency. Automatic end-of-speech detection relies on Silero VAD, already "
     "integrated at the core of the pipeline, which segments the incoming audio stream in 32 ms "
     "windows and triggers each translation cycle as soon as a sentence ends, without requiring "
@@ -525,8 +523,8 @@ para(doc,
     "The deliverables of the project fall into three categories: open linguistic resources, "
     "open-source models and tools, and documented community impact.\n\n"
     "In terms of linguistic resources, the project will produce and publish eighteen dialectal "
-    "audio corpora covering the full range of Malagasy regional varieties — an estimated total "
-    "of 2,500 to 3,000 hours of transcribed and validated speech. These corpora will be "
+    "audio corpora covering the full range of Malagasy regional varieties, totalling an estimated "
+    "2,500 to 3,000 hours of transcribed and validated speech. These corpora will be "
     "published on HuggingFace and contributed to Mozilla Common Voice under Creative Commons "
     "BY 4.0. They will constitute the first open speech resources for Malagasy dialects, "
     "immediately reusable by the African and global NLP research community.\n\n"
@@ -576,7 +574,7 @@ para(doc,
 # ── Q12 ───────────────────────────────────────────────────────────────────────
 qlabel(doc, "Question 12 — Ethical, Inclusion, and Data Governance Considerations (500-word limit)")
 para(doc,
-    "Ethics is at the core of MGVaovao's design — not an afterthought.\n\n"
+    "Ethics is at the core of MGVaovao's design, and not merely an afterthought.\n\n"
     "On consent and speaker protection, every participant signs an informed consent form "
     "available in Official Malagasy and in their local dialect. This form explains the nature "
     "of the data collected, its intended use, the CC BY 4.0 licence under which it will be "
@@ -588,13 +586,13 @@ para(doc,
     "intergenerational phonological variation. Local coordinators are themselves members of "
     "the targeted communities. Maison du Numérique's commitment to inclusion goes beyond "
     "gender and age: the organisation already runs a dedicated digital inclusion programme "
-    "for children with Down syndrome — 28 children accompanied in partnership with Down "
-    "Syndrome Madagascar — and the Ampela Online programme, developed in partnership with Yas, "
-    "for women's entrepreneurship, documented daily practices that place it among the most "
+    "for children with Down syndrome, with 28 children accompanied in partnership with Down "
+    "Syndrome Madagascar, and the Ampela Online programme, developed in partnership with Yas, "
+    "for women's online entrepreneurship, documented daily practices that place it among the most "
     "genuinely inclusive organisations "
     "in Madagascar's digital ecosystem.\n\n"
-    "On licensing and openness, all project deliverables — audio corpora, transcriptions, "
-    "fine-tuned model weights, scripts, documentation — are published under fully open "
+    "On licensing and openness, all project deliverables (audio corpora, transcriptions, "
+    "fine-tuned model weights, scripts, and documentation) are published under fully open "
     "licences: Apache 2.0 for models and code, Creative Commons BY 4.0 for data.\n\n"
     "On environmental impact, the project deliberately minimises its compute footprint through "
     "the use of distilled models (NLLB-200-distilled-600M), INT8 quantisation, LoRA "
@@ -610,19 +608,20 @@ para(doc,
 # ── Q13 ───────────────────────────────────────────────────────────────────────
 qlabel(doc, "Question 13(a) — Applying as a Consortium?")
 para(doc,
-    "No. MGVaovao - Maison du Numérique (Madagasikara Vaovao) submits this proposal as the "
-    "lead organisation. The project operates with an established network of operational "
-    "partners — e-jery, ANKY, Madagascar DataCamp, and Down Syndrome Madagascar — who "
-    "contribute to community outreach and programme delivery but are not formal co-applicants. "
-    "Letters of support can be provided on request.")
+    "No. MGVaovao - Maison du Numérique (Programme of the Madagasikara Vaovao association) submits "
+    "this proposal as the lead organisation. The project operates with an established network of "
+    "operational partners, including YAS Madagascar, e-jery, ANKY, Madagascar DataCamp, and "
+    "Down Syndrome Madagascar, who contribute to community outreach and programme delivery but "
+    "are not formal co-applicants. Letters of support can be provided on request.")
 
 # ── Q14 ───────────────────────────────────────────────────────────────────────
 qlabel(doc, "Question 14 — Letters of Support and Supplementary Documentation")
 para(doc,
     "Letters of support can be requested from Maison du Numérique's operational partners, "
-    "notably e-jery (digital training, 1,483 people certified), ANKY (472), Madagascar "
-    "DataCamp (411), and Down Syndrome Madagascar (trisomy 21 programme). These partnerships "
-    "are active and documented since the inauguration of Maison du Numérique in February 2024.\n\n"
+    "notably YAS Madagascar (Ampela Online, women's online entrepreneurship), e-jery (digital "
+    "training, 1,483 people trained), ANKY (472), Madagascar DataCamp (411), and Down Syndrome "
+    "Madagascar (trisomy 21 programme). These partnerships are active and documented since the "
+    "inauguration of Maison du Numérique in February 2024.\n\n"
     "Supplementary documentation is directly accessible in the public GitHub repositories. "
     "The repository github.com/mgvaovao-Mdn/ml contains a detailed README describing the "
     "complete pipeline architecture, fine-tuning reproduction instructions, evaluation "
@@ -634,10 +633,10 @@ para(doc,
 # ── Q15 ───────────────────────────────────────────────────────────────────────
 qlabel(doc, "Question 15 — Project Team Members and Roles (400-word limit)")
 
-subh(doc, "Fenitra Ravelomanantsoa — Founder and Executive Director, MGVaovao - Maison du Numérique")
+subh(doc, "Fenitra Ravelomanantsoa — Founder and President, MGVaovao - Maison du Numérique")
 para(doc,
-    "Head of Cloud Regulatory Affairs at Google in Zurich — one of the first Malagasy professionals "
-    "to reach a senior leadership position at Google —, Fenitra oversees cloud regulatory compliance "
+    "Head of Cloud Regulatory Affairs at Google in Zurich, one of the first Malagasy professionals "
+    "to reach a senior leadership position at Google, Fenitra oversees cloud regulatory compliance "
     "at international scale. A speaker at the CEO Summit Indian Ocean (April 2026) and candidate "
     "for the CEO of the Year award, he founded the Madagasikara Vaovao association and MGVaovao "
     "- Maison du Numérique in November 2023 on a unique philanthropic model: funded exclusively "
@@ -645,12 +644,13 @@ para(doc,
     "(0 ariary) to digital training for Malagasy communities. He oversees the project's global "
     "strategy, institutional partnerships, and ethical governance.")
 
-subh(doc, "Norolala Randrianarison — Local Director and Operations Manager")
+subh(doc, "Norolala Randrianarison — Director, Maison du Numérique")
 para(doc,
-    "A professional from the Malagasy telecommunications and digital sector, Mme Noro handles "
+    "A professional from the Malagasy telecommunications and digital sector, she handles "
     "the day-to-day operational management of Maison du Numérique. She oversees community "
-    "reception, programme deployment, volunteer coordination, and relationships with local "
-    "institutional partners.")
+    "reception, programme deployment, volunteer management and training, and relationships with "
+    "local institutional partners. She is also an experienced project manager leading "
+    "multidisciplinary teams, with expertise in supporting and mentoring young professionals.")
 
 subh(doc, "Guillaume Rakotonjanahary Tsantaniaina — Technical Project Lead — ML and Development")
 para(doc,
@@ -681,15 +681,13 @@ para(doc,
     "quality control, coordinates field teams, and translates business requirements into "
     "functional specifications for the technical pipeline. Proficient in Word, Excel, Google "
     "Sheets, and the full suite of Google platforms, she serves as the interface between "
-    "field operational realities and the technical strand. She also leads the digital "
-    "inclusion programme for children with Down syndrome at Maison du Numérique (28 children "
-    "accompanied in partnership with Down Syndrome Madagascar).")
+    "field operational realities and the technical strand.")
 
 subh(doc, "Partnerships & Impact Lead (to be recruited) · 14 Local Coordinators (to be recruited)")
 para(doc,
     "A third project lead dedicated to institutional partnerships and impact measurement will "
     "be recruited at the start of the project on LINGUA Africa funds. One field coordinator "
-    "will be recruited per dialect region — fourteen in total — from within the speaker "
+    "will be recruited per dialect region, fourteen in total, from within the speaker "
     "communities, with priority given to women.")
 
 # ── Q16 ───────────────────────────────────────────────────────────────────────
@@ -701,8 +699,8 @@ para(doc,
     "inauguration in February 2024. It is on this solid institutional base that the "
     "speech-to-speech translation project in Malagasy dialects was launched at end of 2025, "
     "following a preliminary phase of evaluation of existing ASR and TTS architectures for "
-    "low-resource languages — including Whisper, Chirp (Vertex AI Studio), and VITS "
-    "architectures — which established the transfer adaptation methodology now at the core "
+    "low-resource languages, including Whisper, Chirp (Vertex AI Studio), and VITS "
+    "architectures, which established the transfer adaptation methodology now at the core "
     "of the pipeline.\n\n"
     "This prototype has been operational since April 2026 for four dialects (Official Malagasy, "
     "Betsileo, Betsimisaraka, Sakalava), with end-to-end latency under five seconds; it is a "
@@ -718,8 +716,8 @@ para(doc,
     "beneficiaries since its February 2024 inauguration, 2,366 people trained and certified "
     "via e-jery (1,483), ANKY (472), and Madagascar DataCamp (411), and 28 children with Down "
     "syndrome accompanied in partnership with Down Syndrome Madagascar. Shortlisted for the "
-    "RSE de l'Année 2026 Award (CEO Summit Indian Ocean), MGVaovao benefits from external "
-    "recognition of its social impact.")
+    "RSE de l'Année 2026 Award at the April 2026 2nd edition of the CEO Summit Indian Ocean, "
+    "MGVaovao benefits from external recognition of its social impact.")
 
 doc.add_page_break()
 
@@ -752,8 +750,8 @@ para(doc,
     "comprises a founder at 50% time, a local director, a Technical ML Project Lead, a Data "
     "and Operations Project Lead and a Partnerships Project Lead joining at month 7, each "
     "compensated at USD 1,333 per month (MGA 6,000,000). The technical team consists of seven "
-    "specialized developers — backend, frontend, mobile, AI/ML, data scientist, DevOps and data "
-    "engineer — paid at USD 333 per month (MGA 1,500,000) each.\n\n"
+    "specialized developers (backend, frontend, mobile, AI/ML, data scientist, DevOps, and data "
+    "engineer), each paid at USD 333 per month (MGA 1,500,000).\n\n"
     "Data collection and processing (USD 14,231) covers twenty field collectors active for four "
     "months at USD 133/month as well as nine transcription annotators active for three months "
     "at the same rate.\n\n"
@@ -821,8 +819,8 @@ para(doc,
     "specialised linguistic questions the team cannot resolve alone: defining reference "
     "orthographies for non-standardised dialects, managing intra-dialectal phonological "
     "variation, and designing annotation protocols adapted to languages with predominantly oral "
-    "traditions. Access to experts in the descriptive linguistics of Malagasy varieties — "
-    "through LINGUA Africa's network of academic fellows — would be directly valuable.\n\n"
+    "traditions. Access to experts in the descriptive linguistics of Malagasy varieties, "
+    "through LINGUA Africa's network of academic fellows, would be directly valuable.\n\n"
     "The second area is large-scale human evaluation. Setting up rigorous native-speaker "
     "evaluation panels across eighteen distinct dialects, with standardised protocols and "
     "systematic result analysis, is a methodology the team is implementing at this scale for "
@@ -830,7 +828,7 @@ para(doc,
     "systems for African languages would strengthen the scientific rigour of the project's "
     "outputs.\n\n"
     "The third area is networking with other LINGUA Africa ecosystem projects working on "
-    "similar challenges — insular African languages, regional dialects, languages with oral "
+    "similar challenges, such as insular African languages, regional dialects, and languages with oral "
     "traditions. Structured access to Masakhane communities of practice would allow the team "
     "to learn from other projects and contribute in return with its own findings on Malagasy, "
     "enriching the collective ecosystem that LINGUA Africa is building.")
@@ -858,6 +856,6 @@ note(doc,
     "NOTE 5 — Q9 length: the methodology section exceeds 1,000 words slightly with the fourth "
     "pillar added. Trim if the form enforces a strict word count.")
 
-output_path = r"C:\mgvaovao\LINGUA_Africa_Application_MGVaovao_EN.docx"
+output_path = r"C:\Github Repositories\mgvaovao\LINGUA_Africa_Application_MGVaovao_FINAL_EN.docx"
 doc.save(output_path)
 print(f"File saved: {output_path}")
