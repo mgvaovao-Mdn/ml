@@ -88,7 +88,9 @@ def make_tokenize_fn(tokenizer, src_langs: dict, nllb_target: str,
 def main():
     args = parse_args()
 
-    from mgvaovao.core.config import settings, DIALECT_META, SRC_LANGS
+    from mgvaovao.core.config import (
+        settings, DIALECT_META, SRC_LANGS, NEW_LANG_TOKENS,
+    )
     import torch
 
     cfg   = DIALECT_META[args.dialect]
@@ -146,6 +148,21 @@ def main():
     log.info("Loading tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(tc["model_name"])
 
+    # Les dialectes ne font pas partie des 200 langues de NLLB : leurs jetons
+    # cibles doivent être ajoutés au vocabulaire, sinon le tokenizer les
+    # découperait en sous-mots et le modèle n'aurait aucun signal de dialecte.
+    added = tokenizer.add_special_tokens(
+        {"additional_special_tokens": NEW_LANG_TOKENS}
+    )
+    if added:
+        log.info(f"  + {added} jeton(s) de dialecte ajouté(s) : {NEW_LANG_TOKENS}")
+
+    # `lang_code_to_id` alimente forced_bos_token_id à la génération ; sans
+    # cette mise à jour, demander un dialecte à l'inférence lèverait une KeyError.
+    if hasattr(tokenizer, "lang_code_to_id"):
+        for tok in NEW_LANG_TOKENS:
+            tokenizer.lang_code_to_id[tok] = tokenizer.convert_tokens_to_ids(tok)
+
     # ── Dataset ───────────────────────────────────────────────────
     log.info("Building datasets...")
     train_ds_raw, val_ds_raw = build_hf_dataset(paths["train"], paths["val"])
@@ -171,6 +188,13 @@ def main():
         torch_dtype=torch.float16 if use_fp16 else torch.float32,
         low_cpu_mem_usage=True,
     )
+
+    # La matrice d'embeddings doit couvrir les jetons qu'on vient d'ajouter ;
+    # sans ce redimensionnement, leur identifiant sort de la table et
+    # l'entraînement échoue sur un index hors bornes.
+    if len(tokenizer) > model.get_input_embeddings().num_embeddings:
+        model.resize_token_embeddings(len(tokenizer))
+        log.info(f"  embeddings redimensionnés à {len(tokenizer)}")
 
     if tc["gradient_checkpointing"]:
         # use_reentrant=False is required when combining LoRA (frozen base) + gradient checkpointing

@@ -9,36 +9,61 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DIALECTS: List[str] = ["plt_latn", "betsileo", "betsimisaraka", "sakalava"]
 
+# Chaque dialecte porte son PROPRE jeton cible.
+#
+# Auparavant les quatre partageaient "plt_Latn" : le modèle n'avait alors aucun
+# moyen de distinguer « traduire en betsileo » de « traduire en officiel », et
+# chaque dialecte était entraîné isolément — donc sans profiter des données de
+# l'officiel, de loin les plus nombreuses. Avec des jetons distincts et un
+# entraînement conjoint, les dialectes peu dotés bénéficient du transfert depuis
+# le malgache officiel, ce dont le sakalava a un besoin vital.
+#
+# Codes : `plt`, `bzc` et `skg` sont de vrais codes ISO 639-3. Le betsileo n'a
+# pas de code propre — ISO le rattache au plateau (`plt`) — d'où un jeton dérivé
+# explicite. À faire valider par un linguiste avant de figer le corpus.
 DIALECT_META: dict = {
     "plt_latn": {
         "name":       "Malagasy Officiel",
         "region":     "Hautes Terres — Antananarivo",
         "population": "référence nationale",
         "nllb_target":"plt_Latn",
+        "iso639_3":   "plt",
         "phase":      1,
     },
     "betsileo": {
         "name":       "Betsileo",
         "region":     "Fianarantsoa — Hautes Terres Sud",
         "population": "~1.5 million",
-        "nllb_target":"plt_Latn",
+        # Pas de code ISO 639-3 distinct : rattaché à `plt`. Jeton dérivé.
+        "nllb_target":"pltbts_Latn",
+        "iso639_3":   None,
         "phase":      4,
     },
     "betsimisaraka": {
         "name":       "Betsimisaraka",
         "region":     "Côte Est — Toamasina",
         "population": "~1.5 million",
-        "nllb_target":"plt_Latn",
+        "nllb_target":"bzc_Latn",
+        "iso639_3":   "bzc",
         "phase":      4,
     },
     "sakalava": {
         "name":       "Sakalava",
         "region":     "Côte Ouest — Mahajanga, Toliara",
         "population": "~1 million",
-        "nllb_target":"plt_Latn",
+        "nllb_target":"skg_Latn",
+        "iso639_3":   "skg",
         "phase":      4,
     },
 }
+
+# Jetons à ajouter au tokenizer NLLB : ceux qui ne font pas déjà partie des 200
+# langues du modèle. `plt_Latn` en fait partie, les trois autres non.
+NEW_LANG_TOKENS: List[str] = [
+    meta["nllb_target"]
+    for key, meta in DIALECT_META.items()
+    if key != "plt_latn"
+]
 
 SRC_LANGS: dict[str, str] = {
     "fr": "fra_Latn",
