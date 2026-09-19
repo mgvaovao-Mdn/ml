@@ -101,7 +101,11 @@ class Settings(BaseSettings):
     nllb_model_name:           str   = "facebook/nllb-200-distilled-600M"
     nllb_lora_r:               int   = 16
     nllb_lora_alpha:           int   = 32
-    nllb_lora_target_modules:  List[str] = ["q_proj", "v_proj"]
+    # q_proj/v_proj seuls ne suffisent pas pour absorber une nouvelle variete :
+    # on elargit a l ensemble des projections d attention et au feed-forward.
+    nllb_lora_target_modules:  List[str] = [
+        "q_proj", "k_proj", "v_proj", "out_proj", "fc1", "fc2",
+    ]
     nllb_lora_dropout:         float = 0.1
     nllb_max_src_len:          int   = 128
     nllb_max_tgt_len:          int   = 128

@@ -196,10 +196,37 @@ def main():
         model.resize_token_embeddings(len(tokenizer))
         log.info(f"  embeddings redimensionnés à {len(tokenizer)}")
 
+        # Initialiser chaque jeton de dialecte depuis `plt_Latn` plutôt que de le
+        # laisser aléatoire. Les dialectes sont proches du malgache officiel :
+        # partir de son embedding donne au modèle un point de départ sensé au
+        # lieu d'un vecteur sans rapport, ce qui compte d'autant plus que les
+        # corpus dialectaux sont minuscules. C'est la recette de référence pour
+        # ajouter une langue à NLLB.
+        import torch as _torch
+
+        base_id = tokenizer.convert_tokens_to_ids("plt_Latn")
+        with _torch.no_grad():
+            emb = model.get_input_embeddings().weight
+            for tok in NEW_LANG_TOKENS:
+                tok_id = tokenizer.convert_tokens_to_ids(tok)
+                if tok_id is not None and tok_id < emb.shape[0]:
+                    emb[tok_id] = emb[base_id].clone()
+        log.info(f"  jetons de dialecte initialisés depuis plt_Latn")
+
     if tc["gradient_checkpointing"]:
         # use_reentrant=False is required when combining LoRA (frozen base) + gradient checkpointing
         model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
 
+    # `modules_to_save` est indispensable ici, et c'est le piège de l'ajout d'une
+    # langue à NLLB : un LoRA classique ne touche que q_proj/v_proj et laisse la
+    # matrice d'embeddings GELÉE. Les jetons de dialecte qu'on vient d'ajouter
+    # resteraient alors à leur initialisation, et le modèle ne saurait jamais
+    # distinguer `skg_Latn` de `plt_Latn` — l'entraînement tournerait sans
+    # erreur en n'apprenant rien du dialecte.
+    #
+    # Les couches d'attention sont aussi élargies : avec seulement q_proj/v_proj,
+    # la capacité d'adaptation est trop faible pour absorber une nouvelle variété.
+    # L'adaptateur devient plus lourd, ce qui est le prix à payer.
     lora_cfg = LoraConfig(
         task_type=TaskType.SEQ_2_SEQ_LM,
         r=tc["lora_r"],
@@ -208,6 +235,7 @@ def main():
         lora_dropout=tc["lora_dropout"],
         bias="none",
         inference_mode=False,
+        modules_to_save=["shared"] if NEW_LANG_TOKENS else None,
     )
     model = get_peft_model(model, lora_cfg)
     model.print_trainable_parameters()
