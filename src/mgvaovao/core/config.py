@@ -65,6 +65,88 @@ NEW_LANG_TOKENS: List[str] = [
     if key != "plt_latn"
 ]
 
+# ── Registre dynamique ──────────────────────────────────────────────────────
+#
+# DIALECT_META ci-dessus n'est qu'un repli. La source de verite est la
+# plateforme de collecte, dont le CRUD porte deja les dialectes et, depuis
+# l'ajout de leur configuration de modele, leurs jetons de langue.
+#
+# `npm run db:export:training` y depose un `dialects.json` ; le chemin se regle
+# par MGVAOVAO_DIALECT_REGISTRY. Sans ce fichier, on retombe sur la table en dur
+# — le pipeline reste donc utilisable hors ligne, mais un dialecte ajoute dans
+# la plateforme n'apparait ici qu'une fois l'export rejoue.
+#
+# Interet concret : ajouter un dialecte ne demande plus de toucher au Python.
+# Les noms de points de controle (`nllb_<id>`, `tts_<id>`) se deduisent de
+# l'identifiant, donc ils suivent automatiquement.
+
+def _load_dialect_registry() -> tuple[List[str], dict, List[str]]:
+    """
+    Retourne (DIALECTS, DIALECT_META, NEW_LANG_TOKENS) depuis le registre
+    exporte s'il existe, sinon depuis la table en dur.
+
+    Toute anomalie de lecture retombe silencieusement sur le repli : un registre
+    illisible ne doit pas empecher un entrainement de demarrer, il doit juste
+    ne pas etre pris en compte.
+    """
+    import json
+    import os
+
+    path = os.environ.get("MGVAOVAO_DIALECT_REGISTRY", "")
+    if not path:
+        for candidate in ("dialects.json", "dataset/dialects.json", "export/dialects.json"):
+            if os.path.exists(candidate):
+                path = candidate
+                break
+
+    if not path or not os.path.exists(path):
+        return _FALLBACK_DIALECTS, _FALLBACK_META, _FALLBACK_TOKENS
+
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            entries = json.load(fh)
+        if not isinstance(entries, list) or not entries:
+            return _FALLBACK_DIALECTS, _FALLBACK_META, _FALLBACK_TOKENS
+
+        ids: List[str] = []
+        meta: dict = {}
+        for entry in entries:
+            key = entry.get("id")
+            target = entry.get("nllb_target")
+            if not key or not target:
+                continue
+            ids.append(key)
+            base = _FALLBACK_META.get(key, {})
+            meta[key] = {
+                "name": entry.get("name", base.get("name", key)),
+                "region": base.get("region", ""),
+                "population": base.get("population", ""),
+                "nllb_target": target,
+                "iso639_3": entry.get("iso639_3", base.get("iso639_3")),
+                "is_translation_target": entry.get("is_translation_target", False),
+                "nllb_checkpoint": entry.get("nllb_checkpoint", "nllb_" + key),
+                "tts_checkpoint": entry.get("tts_checkpoint", "tts_" + key),
+                "phase": base.get("phase", 4),
+            }
+
+        if not ids:
+            return _FALLBACK_DIALECTS, _FALLBACK_META, _FALLBACK_TOKENS
+
+        # Les jetons a ajouter sont ceux que NLLB ne connait pas : tout sauf
+        # `plt_Latn`, qui fait partie de ses 200 langues.
+        tokens = [m["nllb_target"] for m in meta.values() if m["nllb_target"] != "plt_Latn"]
+        return ids, meta, sorted(set(tokens))
+    except Exception:
+        return _FALLBACK_DIALECTS, _FALLBACK_META, _FALLBACK_TOKENS
+
+
+_FALLBACK_DIALECTS = DIALECTS
+_FALLBACK_META = DIALECT_META
+_FALLBACK_TOKENS = NEW_LANG_TOKENS
+
+DIALECTS, DIALECT_META, NEW_LANG_TOKENS = _load_dialect_registry()
+
+
 SRC_LANGS: dict[str, str] = {
     "fr": "fra_Latn",
     "en": "eng_Latn",
