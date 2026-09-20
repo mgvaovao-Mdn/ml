@@ -26,6 +26,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from mgvaovao.core.config import Settings
 from mgvaovao.models.streaming_vad import StreamingVAD
 
+from ..quotas import COMPTEURS, Refus, adresse
 from .turn_state import TurnController
 
 log = logging.getLogger("mgvaovao.stream")
@@ -116,117 +117,183 @@ async def stream_audio(
     Le client DOIT envoyer `playback_finished` à la fin de la lecture. À défaut,
     un délai de garde rétablit l'écoute pour ne pas laisser la session sourde.
     """
-    await websocket.accept()
+    ip = adresse(websocket)
 
+    # Le quota est verifie avant d'attendre les modeles : refuser apres avoir
+    # tenu la connexion quatre-vingt-dix secondes reviendrait a offrir a un
+    # script exactement ce qu'il cherche, une place occupee.
     try:
-        pipeline = await _attendre_pipeline(websocket.app, dialect, websocket)
-    except KeyError:
+        COMPTEURS.ouvrir_session(ip)
+    except Refus as refus:
+        # La connexion est acceptee puis refermee avec un motif : un refus au
+        # niveau du protocole arrive au navigateur sans message exploitable, et
+        # la personne ne voit qu'une coupure inexpliquee.
+        await websocket.accept()
         await websocket.send_json({
             "type": "error",
-            "message": f"Dialecte « {dialect} » indisponible. "
-                       f"Disponibles : {list(getattr(websocket.app.state, 'pipelines', {}).keys())}",
-        })
-        await websocket.close(code=1008)
-        return
-    except TimeoutError:
-        await websocket.send_json({
-            "type": "error",
-            "message": "Les modeles mettent trop longtemps a se charger. Reessayez dans une minute.",
+            "code": refus.motif,
+            "message": refus.message,
         })
         await websocket.close(code=1013)  # Try Again Later
+        log.warning(f"WS refuse — motif={refus.motif} ip={ip}")
         return
 
-    vad = StreamingVAD(_settings)
-    loop = asyncio.get_event_loop()
-    turn = TurnController()
+    await websocket.accept()
+    debut_session = asyncio.get_event_loop().time()
 
-    async def set_turn(new_state_fn, *args) -> None:
-        """Applique une transition et en informe le client."""
-        new_state_fn(*args)
-        await websocket.send_json({"type": "turn", "state": turn.state.value})
+    def duree_session() -> float:
+        return asyncio.get_event_loop().time() - debut_session
 
-    log.info(f"WS open — dialect={dialect} src_lang={src_lang}")
-
+    # Quoi qu'il arrive ensuite — deconnexion, erreur de pipeline, coupure
+    # sur quota — la place doit etre rendue et la duree imputee au budget.
+    # Sans ce `finally`, une session qui tombe sur une exception laisserait
+    # son compteur a un, et l'adresse serait bloquee jusqu'au redemarrage.
     try:
-        while True:
-            msg = await websocket.receive()
+        try:
+            pipeline = await _attendre_pipeline(websocket.app, dialect, websocket)
+        except KeyError:
+            await websocket.send_json({
+                "type": "error",
+                "message": f"Dialecte « {dialect} » indisponible. "
+                           f"Disponibles : {list(getattr(websocket.app.state, 'pipelines', {}).keys())}",
+            })
+            await websocket.close(code=1008)
+            return
+        except TimeoutError:
+            await websocket.send_json({
+                "type": "error",
+                "message": "Les modeles mettent trop longtemps a se charger. Reessayez dans une minute.",
+            })
+            await websocket.close(code=1013)  # Try Again Later
+            return
 
-            # ── trames de contrôle ────────────────────────────────────────
-            if "text" in msg:
+        vad = StreamingVAD(_settings)
+        loop = asyncio.get_event_loop()
+        turn = TurnController()
+
+        async def set_turn(new_state_fn, *args) -> None:
+            """Applique une transition et en informe le client."""
+            new_state_fn(*args)
+            await websocket.send_json({"type": "turn", "state": turn.state.value})
+
+        log.info(f"WS open — dialect={dialect} src_lang={src_lang} ip={ip}")
+
+        lim = COMPTEURS.limites
+        dernier_audio = asyncio.get_event_loop().time()
+
+        async def couper(motif: str, message: str) -> None:
+            await websocket.send_json({"type": "error", "code": motif, "message": message})
+            await websocket.close(code=1013)
+            log.info(f"WS coupe — motif={motif} ip={ip} duree={duree_session():.0f}s")
+
+        try:
+            while True:
+                # `receive` ne rend la main que sur une trame. Une session
+                # muette y resterait indefiniment, place de concurrence
+                # occupee, jusqu'au delai d'une heure de Cloud Run : le
+                # decompte est donc pose sur l'attente elle-meme.
+                restant = lim.silence_max_s - (
+                    asyncio.get_event_loop().time() - dernier_audio
+                )
                 try:
-                    ctrl = json.loads(msg["text"])
-                except (ValueError, TypeError):
+                    msg = await asyncio.wait_for(
+                        websocket.receive(), timeout=max(1.0, restant)
+                    )
+                except asyncio.TimeoutError:
+                    await couper(
+                        "silence",
+                        "Session close apres "
+                        f"{lim.silence_max_s} secondes sans audio. Rouvrez la page pour reprendre.",
+                    )
+                    break
+
+                if duree_session() > lim.duree_max_session_s:
+                    await couper(
+                        "duree_max",
+                        "Session de demonstration close apres "
+                        f"{lim.duree_max_session_s // 60} minutes. Rouvrez la page pour continuer.",
+                    )
+                    break
+
+                # ── trames de contrôle ────────────────────────────────────────
+                if "text" in msg:
+                    try:
+                        ctrl = json.loads(msg["text"])
+                    except (ValueError, TypeError):
+                        continue
+
+                    kind = ctrl.get("type")
+                    if kind == "playback_finished":
+                        # Le client a fini de jouer l'audio : on peut réécouter.
+                        # Le VAD est vidé pour ne pas repartir sur des restes captés
+                        # pendant la lecture.
+                        vad.reset()
+                        await set_turn(turn.resume_listening)
+                    elif kind == "barge_in":
+                        turn._allow_barge_in = bool(ctrl.get("enabled"))
+                        log.info(f"barge-in {'activé' if turn._allow_barge_in else 'désactivé'}")
                     continue
 
-                kind = ctrl.get("type")
-                if kind == "playback_finished":
-                    # Le client a fini de jouer l'audio : on peut réécouter.
-                    # Le VAD est vidé pour ne pas repartir sur des restes captés
-                    # pendant la lecture.
-                    vad.reset()
-                    await set_turn(turn.resume_listening)
-                elif kind == "barge_in":
-                    turn._allow_barge_in = bool(ctrl.get("enabled"))
-                    log.info(f"barge-in {'activé' if turn._allow_barge_in else 'désactivé'}")
-                continue
+                # ── disconnect frame (uvicorn sends this before raising WebSocketDisconnect)
+                if msg.get("type") == "websocket.disconnect":
+                    break
 
-            # ── disconnect frame (uvicorn sends this before raising WebSocketDisconnect)
-            if msg.get("type") == "websocket.disconnect":
-                break
+                # ── audio binary frame ────────────────────────────────────────
+                raw: bytes = msg.get("bytes") or b""
+                if not raw:
+                    continue
+                dernier_audio = asyncio.get_event_loop().time()
 
-            # ── audio binary frame ────────────────────────────────────────
-            raw: bytes = msg.get("bytes") or b""
-            if not raw:
-                continue
-
-            # Un client muet pendant la lecture finirait par bloquer la
-            # session : le délai de garde rétablit l'écoute de force.
-            if turn.expired():
-                log.warning("fin de lecture non signalée — écoute rétablie")
-                vad.reset()
-                await set_turn(turn.resume_listening)
-
-            if not turn.accepts_audio():
-                # Trames ignorées pendant le traitement et la lecture. Le VAD est
-                # réinitialisé à chaque fois : sans cela son tampon accumulerait
-                # la voix du modèle et l'émettrait au retour à l'écoute — c'est
-                # exactement la boucle qu'on cherche à éviter.
-                vad.reset()
-                continue
-
-            state, prob, audio = vad.push_bytes(raw)
-
-            # Retour VAD continu, pour l'indicateur visuel du client
-            await websocket.send_json({
-                "type": "vad",
-                "state": state,
-                "prob": round(prob, 3),
-            })
-
-            if state == "end" and audio is not None:
-                await set_turn(turn.begin_processing)
-                try:
-                    fn = partial(_run_pipeline_sync, pipeline, audio, src_lang)
-                    result = await loop.run_in_executor(None, fn)
-                    await websocket.send_json(result)
-
-                    # La durée de l'audio synthétisé borne l'attente avant de
-                    # réécouter, si le client ne signale rien.
-                    duration = None
-                    if isinstance(result, dict):
-                        duration = result.get("audio_duration_s") or result.get("duration_s")
-                    vad.reset()
-                    await set_turn(turn.begin_speaking, duration)
-                except Exception as exc:
-                    log.exception("Pipeline error")
-                    await websocket.send_json({
-                        "type": "error",
-                        "message": str(exc),
-                    })
-                    # En cas d'échec on réécoute : rester bloqué en traitement
-                    # rendrait la session inutilisable jusqu'à reconnexion.
+                # Un client muet pendant la lecture finirait par bloquer la
+                # session : le délai de garde rétablit l'écoute de force.
+                if turn.expired():
+                    log.warning("fin de lecture non signalée — écoute rétablie")
                     vad.reset()
                     await set_turn(turn.resume_listening)
 
-    except WebSocketDisconnect:
-        log.info(f"WS closed — dialect={dialect}")
+                if not turn.accepts_audio():
+                    # Trames ignorées pendant le traitement et la lecture. Le VAD est
+                    # réinitialisé à chaque fois : sans cela son tampon accumulerait
+                    # la voix du modèle et l'émettrait au retour à l'écoute — c'est
+                    # exactement la boucle qu'on cherche à éviter.
+                    vad.reset()
+                    continue
+
+                state, prob, audio = vad.push_bytes(raw)
+
+                # Retour VAD continu, pour l'indicateur visuel du client
+                await websocket.send_json({
+                    "type": "vad",
+                    "state": state,
+                    "prob": round(prob, 3),
+                })
+
+                if state == "end" and audio is not None:
+                    await set_turn(turn.begin_processing)
+                    try:
+                        fn = partial(_run_pipeline_sync, pipeline, audio, src_lang)
+                        result = await loop.run_in_executor(None, fn)
+                        await websocket.send_json(result)
+
+                        # La durée de l'audio synthétisé borne l'attente avant de
+                        # réécouter, si le client ne signale rien.
+                        duration = None
+                        if isinstance(result, dict):
+                            duration = result.get("audio_duration_s") or result.get("duration_s")
+                        vad.reset()
+                        await set_turn(turn.begin_speaking, duration)
+                    except Exception as exc:
+                        log.exception("Pipeline error")
+                        await websocket.send_json({
+                            "type": "error",
+                            "message": str(exc),
+                        })
+                        # En cas d'échec on réécoute : rester bloqué en traitement
+                        # rendrait la session inutilisable jusqu'à reconnexion.
+                        vad.reset()
+                        await set_turn(turn.resume_listening)
+
+        except WebSocketDisconnect:
+            log.info(f"WS closed — dialect={dialect}")
+    finally:
+        COMPTEURS.fermer_session(ip, duree_session())

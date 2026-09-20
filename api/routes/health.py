@@ -1,6 +1,8 @@
 from fastapi import APIRouter, HTTPException, Request
 from mgvaovao.core.schemas import HealthResponse, ReadyResponse
 
+from ..quotas import COMPTEURS
+
 router = APIRouter()
 
 
@@ -19,3 +21,17 @@ def ready(request: Request):
         ready=True,
         loaded_dialects=list(pipelines.keys()),
     )
+
+
+@router.get("/quotas", summary="Usage de la demonstration et limites en vigueur")
+def quotas():
+    """
+    Etat des quotas du processus.
+
+    Sert a deux choses : verifier depuis l'exterieur que les garde-fous sont
+    bien actifs avec les valeurs attendues, et voir venir l'epuisement du
+    budget avant que la demonstration ne ferme au nez d'un partenaire.
+
+    Le decompte est celui de ce processus seul — voir `api/quotas.py`.
+    """
+    return COMPTEURS.etat()

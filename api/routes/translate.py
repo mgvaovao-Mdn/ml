@@ -26,12 +26,31 @@ from mgvaovao.core.schemas import (
 )
 from mgvaovao.pipeline import PipelineResult
 
+from ..quotas import COMPTEURS, Refus, adresse
+
 router = APIRouter()
 
 TARGET_SR = 16_000
 
 
 # ── helpers ───────────────────────────────────────────────────────────────
+
+def _verifier_quota(request: Request) -> None:
+    """
+    Applique le quota REST, ou refuse avec un 429.
+
+    Ces deux routes font tourner le meme pipeline GPU que le WebSocket. Les
+    laisser sans limite reviendrait a verrouiller une porte en laissant
+    l'autre ouverte.
+    """
+    try:
+        COMPTEURS.requete(adresse(request))
+    except Refus as refus:
+        raise HTTPException(
+            status_code=429,
+            detail={"code": refus.motif, "message": refus.message},
+        ) from None
+
 
 def _get_pipeline(request: Request, dialect: str):
     pipelines = getattr(request.app.state, "pipelines", {})
@@ -80,6 +99,7 @@ async def translate_audio(
     dialect:  str        = Form("betsileo", description="Target dialect key"),
     src_lang: str | None = Form(None,       description="Force source lang (fr/en/de/es/it/pt; auto-detect if omitted)"),
 ):
+    _verifier_quota(request)
     pipeline   = _get_pipeline(request, dialect)
     raw        = await file.read()
     audio, sr  = await run_in_threadpool(_audio_from_bytes, raw)
@@ -101,6 +121,7 @@ async def translate_audio(
     summary="Translate text → Malagasy speech (NLLB + TTS, no ASR)",
 )
 def translate_text(request: Request, body: TranslateTextRequest):
+    _verifier_quota(request)
     pipeline = _get_pipeline(request, body.dialect)
     result   = pipeline.run_text(body.text, body.src_lang)
 

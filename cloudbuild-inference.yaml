@@ -23,6 +23,28 @@ substitutions:
   # une soumission manuelle le laisse vide et le build echoue sur un nom
   # d'image invalide. Passer _TAG explicitement rend les deux voies possibles.
   _TAG: manual
+  # Garde-fous d'usage de la demonstration — voir api/quotas.py.
+  #
+  # Le service tourne sur un GPU facture a la seconde d'instance, et Cloud Run
+  # laisse une session WebSocket ouverte jusqu'a une heure : sans ces limites,
+  # quelques connexions maintenues ouvertes font tourner deux GPU en continu.
+  #
+  # Les valeurs sont ici, et non dans le code, pour qu'une demonstration devant
+  # des partenaires puisse etre elargie le temps d'une journee sans
+  # reconstruire l'image.
+  _QUOTA_SESSIONS_PAR_IP: "2"
+  _QUOTA_RAFALE: "10"
+  _QUOTA_RAFALE_FENETRE_S: "60"
+  # Dix minutes par session. La borne haute reste le --timeout de Cloud Run
+  # ci-dessous : porter cette valeur au-dela n'aurait aucun effet.
+  _QUOTA_DUREE_SESSION_S: "600"
+  _QUOTA_SILENCE_S: "120"
+  # Trente minutes d'essai par adresse et par jour ; huit heures de session
+  # cumulees pour l'ensemble, ce qui borne la facture quotidienne du GPU.
+  _QUOTA_BUDGET_IP_S: "1800"
+  _QUOTA_BUDGET_GLOBAL_S: "28800"
+  _QUOTA_REST: "30"
+  _QUOTA_REST_FENETRE_S: "60"
 
 steps:
 
@@ -87,7 +109,10 @@ steps:
       - --port=8080
       # --set-env-vars remplace TOUTE la configuration : chaque variable
       # necessaire doit figurer ici, sinon elle disparait au deploiement.
-      - --set-env-vars=MGVAOVAO_DEVICE=cuda,MGVAOVAO_WHISPER_MODEL_SIZE=small,MGVAOVAO_COLLECTION_URL=${_COLLECTION_URL}
+      # Une seule ligne, volontairement : un scalaire plie sur plusieurs
+      # lignes en YAML les rejoint par des espaces, et chaque nom de
+      # variable apres une virgule partirait avec un espace en tete.
+      - --set-env-vars=MGVAOVAO_DEVICE=cuda,MGVAOVAO_WHISPER_MODEL_SIZE=small,MGVAOVAO_COLLECTION_URL=${_COLLECTION_URL},QUOTA_SESSIONS_PAR_IP=${_QUOTA_SESSIONS_PAR_IP},QUOTA_RAFALE=${_QUOTA_RAFALE},QUOTA_RAFALE_FENETRE_S=${_QUOTA_RAFALE_FENETRE_S},QUOTA_DUREE_SESSION_S=${_QUOTA_DUREE_SESSION_S},QUOTA_SILENCE_S=${_QUOTA_SILENCE_S},QUOTA_BUDGET_IP_S=${_QUOTA_BUDGET_IP_S},QUOTA_BUDGET_GLOBAL_S=${_QUOTA_BUDGET_GLOBAL_S},QUOTA_REST=${_QUOTA_REST},QUOTA_REST_FENETRE_S=${_QUOTA_REST_FENETRE_S}
       - --allow-unauthenticated
       - --quiet
 
