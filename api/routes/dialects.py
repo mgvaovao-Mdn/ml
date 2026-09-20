@@ -99,7 +99,11 @@ def _local_dialects() -> list[dict]:
     summary="Dialectes disponibles et etat des modeles",
 )
 def list_dialects(request: Request):
-    pipelines = getattr(request.app.state, "pipelines", {})
+    # `pipelines` contient un pipeline pour CHAQUE dialecte, avec ou sans
+    # modele fine-tune : s'y fier annoncerait un modele dedie partout. C'est
+    # `finetuned` qui dit si un checkpoint propre au dialecte a ete trouve au
+    # demarrage.
+    finetuned = getattr(request.app.state, "finetuned", {})
     entries = _remote_dialects() or _local_dialects()
 
     resultats: list[DialectInfo] = []
@@ -112,7 +116,13 @@ def list_dialects(request: Request):
         # ici, pas dans la base de collecte. Un dialecte cree recemment n'en a
         # donc pas encore, et c'est sans consequence.
         meta = DIALECT_META.get(code, {})
-        pret = code in pipelines
+
+        # Un dialecte n'est « pret » que si la traduction ET la synthese ont
+        # leur propre modele. Avec l'un des deux seulement, la restitution
+        # n'est pas dialectale de bout en bout, et l'annoncer comme dediee
+        # serait trompeur.
+        etat = finetuned.get(code) or {}
+        pret = bool(etat.get("nllb")) and bool(etat.get("tts"))
 
         resultats.append(
             DialectInfo(

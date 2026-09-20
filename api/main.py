@@ -84,11 +84,29 @@ def _load_models_bg(app: FastAPI) -> None:
             log.info(f"  [{dialect}] loading NLLB translator…")
             translator = NLLBTranslator(dialect)
 
+            # Un pipeline est cree pour CHAQUE dialecte, avec ou sans
+            # checkpoint : sa seule presence ne dit donc rien de la qualite
+            # dialectale. Ce qui la dit, c'est l'existence d'un checkpoint
+            # fine-tune — et cette information n'etait ecrite que dans les
+            # logs, donc invisible de l'interface, qui annoncait un modele
+            # dedie pour des dialectes servis par le modele de base.
+            nllb_ckpt = settings.nllb_checkpoint(dialect) / "final"
+            nllb_finetuned = (
+                nllb_ckpt.is_dir()
+                and (nllb_ckpt / "adapter_config.json").is_file()
+            )
+
             tts_ckpt = settings.tts_checkpoint(dialect) / "final"
-            if tts_ckpt.is_dir():
+            tts_finetuned = tts_ckpt.is_dir()
+            if tts_finetuned:
                 log.info(f"  [{dialect}] TTS — fine-tuned checkpoint found.")
             else:
                 log.info(f"  [{dialect}] TTS — no checkpoint, using base model.")
+
+            app.state.finetuned[dialect] = {
+                "nllb": nllb_finetuned,
+                "tts": tts_finetuned,
+            }
             tts = MalagasyTTS(dialect)
 
             app.state.pipelines[dialect] = MalagasyPipeline(
@@ -112,6 +130,8 @@ async def lifespan(app: FastAPI):
     import threading
     # Initialise state immediately so /health responds before models are loaded
     app.state.pipelines = {}
+    # Par dialecte : quels checkpoints fine-tunes ont reellement ete trouves.
+    app.state.finetuned = {}
     app.state.models_ready = False
 
     # Load models in a daemon thread — uvicorn opens port 8080 without waiting
@@ -122,6 +142,7 @@ async def lifespan(app: FastAPI):
     yield
 
     app.state.pipelines.clear()
+    app.state.finetuned.clear()
     log.info("Pipelines released.")
 
 
