@@ -12,6 +12,13 @@
 substitutions:
   _REGION: us-central1
   _SERVICE: mgvaovao-inference
+  # Plateforme de collecte, d'ou la demonstration tire la liste des dialectes.
+  #
+  # L'URL Cloud Run plutot que https://kozy.mg : c'est un appel de service a
+  # service, que l'utilisateur ne voit jamais. Le faire passer par le domaine
+  # public le rendrait dependant du DNS et de la validite du certificat, pour
+  # aucun benefice.
+  _COLLECTION_URL: https://kozy-97374817504.us-central1.run.app
 
 steps:
 
@@ -62,7 +69,9 @@ steps:
       - --max-instances=2
       - --timeout=300
       - --port=8080
-      - --set-env-vars=MGVAOVAO_DEVICE=cuda,MGVAOVAO_WHISPER_MODEL_SIZE=small
+      # --set-env-vars remplace TOUTE la configuration : chaque variable
+      # necessaire doit figurer ici, sinon elle disparait au deploiement.
+      - --set-env-vars=MGVAOVAO_DEVICE=cuda,MGVAOVAO_WHISPER_MODEL_SIZE=small,MGVAOVAO_COLLECTION_URL=${_COLLECTION_URL}
       - --allow-unauthenticated
       - --quiet
 
