@@ -422,7 +422,16 @@
     }
     footer a { color: var(--muted); text-decoration: none; }
     footer a:hover { color: var(--blue); }
-  </style>
+  
+  /* Avertissement sous le selecteur de dialecte : visible sans crier. */
+  .model-notice {
+    margin: .5rem 0 0;
+    font-size: .8rem;
+    line-height: 1.45;
+    opacity: .85;
+  }
+  .model-notice a { text-decoration: underline; }
+</style>
 </head>
 <body>
 
@@ -470,6 +479,12 @@
         <option value="betsimisaraka">Betsimisaraka</option>
         <option value="sakalava">Sakalava</option>
       </select>
+      <!--
+        Dit quel modele repond reellement pour le dialecte choisi. Sans cette
+        ligne, choisir « Betsileo » donnerait du malgache officiel sans que
+        rien ne le signale, et la demonstration ferait une promesse fausse.
+      -->
+      <p id="model-notice" class="model-notice"></p>
     </div>
     <div class="field">
       <label for="sel-src-lang">Langue source</label>

@@ -42,7 +42,18 @@ class DialectInfo(BaseModel):
     region:      str
     population:  str
     phase:       int
+
+    # Un modele propre a ce dialecte est charge et repond.
     model_ready: bool
+
+    # Quand model_ready est faux, le dialecte reste selectionnable mais c'est
+    # ce modele-la qui repond. Le dire explicitement evite que la demonstration
+    # laisse croire a une qualite dialectale qui n'existe pas encore.
+    served_by:   str = "plt_latn"
+
+    # Volumes deja collectes sur la plateforme, pour situer ce qui manque.
+    recordings:   int = 0
+    translations: int = 0
 
 
 class HealthResponse(BaseModel):

@@ -35,6 +35,9 @@ let elWelcomeModal, elWelcomeBody, elBtnStart;
 
 // ── WebSocket ──────────────────────────────────────────────────────────────────
 
+// Plateforme de collecte : le lien de retour depuis la demonstration.
+const COLLECTE_URL = "https://kozy.mg";
+
 function wsUrl(dialect, srcLang) {
   const proto = location.protocol === "https:" ? "wss" : "ws";
   const lang  = srcLang !== "auto" ? `?src_lang=${srcLang}` : "";
@@ -250,11 +253,52 @@ async function loadDialects() {
   try {
     const res  = await fetch("/dialects/");
     const list = await res.json();
-    selDialect.innerHTML = list.map(
-      (d) => `<option value="${d.code}">${d.name} (${d.code})${d.model_ready ? "" : " — no model"}</option>`
-    ).join("");
+    window.__dialects = list;
+
+    // « no model » ne disait pas ce qui se passait quand on le choisissait
+    // quand meme. Chaque dialecte reste selectionnable, mais l'intitule dit
+    // desormais quel modele repond reellement — sans quoi la demonstration
+    // ferait passer du malgache officiel pour du dialecte.
+    selDialect.innerHTML = list.map((d) => {
+      const suffixe = d.model_ready ? "" : " — modele generique";
+      return `<option value="${d.code}">${d.name}${suffixe}</option>`;
+    }).join("");
+
+    majAvertissementModele();
   } catch {
     // keep hardcoded fallback options already in HTML
+  }
+}
+
+/**
+ * Dit, sous le selecteur, ce que le modele choisi sait reellement faire.
+ *
+ * Aucun modele dialectal n'est encore entraine : tous les dialectes sont
+ * servis par le modele de malgache officiel. Le taire donnerait l'impression
+ * que la restitution entendue est ce que le projet produira, alors qu'elle
+ * ne reflete que le point de depart.
+ */
+function majAvertissementModele() {
+  const zone = document.getElementById("model-notice");
+  if (!zone) return;
+  const liste = window.__dialects || [];
+  const d = liste.find((x) => x.code === selDialect.value);
+  if (!d) { zone.textContent = ""; return; }
+
+  const volume = (d.recordings || 0) + (d.translations || 0);
+  const collecte = volume
+    ? `${volume.toLocaleString("fr-FR")} contributions deja collectees pour ce dialecte.`
+    : "Aucune contribution collectee pour ce dialecte a ce jour.";
+
+  if (d.model_ready) {
+    zone.innerHTML = `<strong>Modele dedie.</strong> ${collecte} ` +
+      `La qualite continuera de progresser a mesure que le corpus grandit.`;
+  } else {
+    zone.innerHTML = `<strong>Modele generique.</strong> Aucun modele propre a ce ` +
+      `dialecte n'est encore entraine : c'est le modele de malgache officiel qui ` +
+      `repond, la restitution ne sera donc pas dialectale. ${collecte} ` +
+      `<a href="${COLLECTE_URL}" target="_blank" rel="noopener">Contribuer</a> ` +
+      `accelere directement l'entrainement.`;
   }
 }
 
@@ -339,6 +383,10 @@ function init() {
   elWelcomeModal     = document.getElementById("welcome-modal");
   elWelcomeBody      = document.getElementById("welcome-body");
   elBtnStart         = document.getElementById("btn-start");
+
+  // L'avertissement suit le dialecte choisi : sans cet ecouteur, il resterait
+  // celui du premier dialecte et mentirait des le second clic.
+  selDialect.addEventListener("change", majAvertissementModele);
 
   elBtnStart.addEventListener("click", () => {
     hideWelcomeModal();
