@@ -101,6 +101,15 @@ function handleMessage(msg) {
       log(`Résultat — ${msg.latency_ms.total} ms total`);
       break;
 
+    // Le serveur previent qu'il charge encore ses modeles sur le GPU. Sans ce
+    // cas, la session restait muette une quarantaine de secondes au demarrage
+    // a froid et donnait l'impression que rien n'etait envoye.
+    case "loading":
+      log(msg.message || "Chargement des modeles…");
+      elState.textContent = "Chargement des modèles…";
+      elState.className   = "state";
+      break;
+
     case "error":
       log(`Error: ${msg.message}`);
       elState.textContent = "Error";

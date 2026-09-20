@@ -23,6 +23,21 @@ import torch
 from mgvaovao.core.config import Settings, SILERO_VAD_REF as SILERO_REPO
 
 CHUNK_SAMPLES = 512   # Silero requirement at 16 kHz
+
+# Modele Silero partage par tout le processus.
+_MODELE = None
+
+
+def _modele_partage():
+    """Charge le modele au premier appel, puis renvoie toujours le meme."""
+    global _MODELE
+    if _MODELE is None:
+        modele, _ = torch.hub.load(
+            SILERO_REPO, "silero_vad", force_reload=False, trust_repo=True
+        )
+        modele.eval()
+        _MODELE = modele
+    return _MODELE
 TARGET_SR = 16_000
 
 
@@ -47,11 +62,15 @@ class StreamingVAD:
         self._min_silence_frames = max(1, round(cfg.vad_stream_min_silence_ms / 32))
         self._max_speech_frames = round(30_000 / 32)  # hard cap: 30 s
 
-        model, _ = torch.hub.load(
-            SILERO_REPO, "silero_vad", force_reload=False, trust_repo=True
-        )
-        model.eval()
-        self._model = model
+        # Le modele est charge une seule fois pour tout le processus, pas par
+        # instance. Un StreamingVAD est cree a chaque connexion WebSocket : le
+        # recharger a chaque fois lisait le disque et reconstruisait le modele
+        # JIT pendant que la boucle asyncio attendait, ce qui retardait
+        # l'ouverture de chaque session.
+        #
+        # Le modele n'est utilise qu'en lecture, et l'etat de detection vit
+        # dans _reset(), pas dans le modele : le partager est sans danger.
+        self._model = _modele_partage()
 
         self._reset()
 

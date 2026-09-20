@@ -33,11 +33,44 @@ router = APIRouter()
 _settings = Settings()
 
 
-def _get_pipeline(app, dialect: str):
-    pipelines = getattr(app.state, "pipelines", {})
-    if dialect not in pipelines:
-        raise KeyError(dialect)
-    return pipelines[dialect]
+# Le chargement des modeles prend une quarantaine de secondes au demarrage a
+# froid. Une connexion qui arrive pendant ce temps trouvait `pipelines` vide et
+# etait fermee aussitot : cote navigateur, cela se voyait comme une coupure en
+# pleine phrase, sans explication. On attend plutot que le chargement finisse.
+ATTENTE_MODELES_S = 90
+
+
+async def _attendre_pipeline(app, dialect: str, websocket=None):
+    """
+    Renvoie le pipeline du dialecte, en attendant qu'il soit charge.
+
+    Previent le client une fois, pour qu'il affiche « chargement » au lieu de
+    laisser croire a une panne. Leve KeyError si le dialecte reste absent une
+    fois le chargement termine : c'est alors une vraie erreur de dialecte.
+    """
+    prevenu = False
+    debut = asyncio.get_event_loop().time()
+
+    while True:
+        pipelines = getattr(app.state, "pipelines", {})
+        if dialect in pipelines:
+            return pipelines[dialect]
+
+        # Chargement termine et dialecte toujours absent : inutile d'attendre.
+        if getattr(app.state, "models_ready", False):
+            raise KeyError(dialect)
+
+        if asyncio.get_event_loop().time() - debut > ATTENTE_MODELES_S:
+            raise TimeoutError(dialect)
+
+        if not prevenu and websocket is not None:
+            await websocket.send_json({
+                "type": "loading",
+                "message": "Chargement des modeles sur le GPU, patientez quelques secondes.",
+            })
+            prevenu = True
+
+        await asyncio.sleep(1.0)
 
 
 def _run_pipeline_sync(pipeline, audio: np.ndarray, src_lang: str | None) -> dict:
@@ -86,14 +119,21 @@ async def stream_audio(
     await websocket.accept()
 
     try:
-        pipeline = _get_pipeline(websocket.app, dialect)
+        pipeline = await _attendre_pipeline(websocket.app, dialect, websocket)
     except KeyError:
         await websocket.send_json({
             "type": "error",
-            "message": f"Dialect '{dialect}' not loaded. "
-                       f"Available: {list(getattr(websocket.app.state, 'pipelines', {}).keys())}",
+            "message": f"Dialecte « {dialect} » indisponible. "
+                       f"Disponibles : {list(getattr(websocket.app.state, 'pipelines', {}).keys())}",
         })
         await websocket.close(code=1008)
+        return
+    except TimeoutError:
+        await websocket.send_json({
+            "type": "error",
+            "message": "Les modeles mettent trop longtemps a se charger. Reessayez dans une minute.",
+        })
+        await websocket.close(code=1013)  # Try Again Later
         return
 
     vad = StreamingVAD(_settings)

@@ -68,10 +68,22 @@ steps:
       - --memory=32Gi
       - --no-cpu-throttling
       - --no-gpu-zonal-redundancy
-      - --concurrency=1
+      # Une connexion WebSocket occupe sa place tant qu'elle dure. Avec
+      # --concurrency=1, un seul auditeur monopolisait l'instance entiere :
+      # sa propre reconnexion, ou le simple chargement de /dialects/, partait
+      # sur une seconde instance qui demarrait a froid pendant 45 secondes, et
+      # la connexion arrivait avant les modeles. C'est ce qui produisait les
+      # coupures repetees en pleine phrase.
+      #
+      # Le GPU serialise de toute facon les inferences ; ce reglage ne sert
+      # qu'a laisser plusieurs sessions et les requetes statiques partager une
+      # instance deja chaude.
+      - --concurrency=4
       - --min-instances=0
       - --max-instances=2
-      - --timeout=300
+      # Cloud Run compte une session WebSocket comme UNE requete : a 300 s,
+      # toute session etait coupee au bout de cinq minutes, meme active.
+      - --timeout=3600
       - --port=8080
       # --set-env-vars remplace TOUTE la configuration : chaque variable
       # necessaire doit figurer ici, sinon elle disparait au deploiement.
