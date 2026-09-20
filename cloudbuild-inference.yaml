@@ -19,6 +19,10 @@ substitutions:
   # public le rendrait dependant du DNS et de la validite du certificat, pour
   # aucun benefice.
   _COLLECTION_URL: https://kozy-97374817504.us-central1.run.app
+  # Etiquette de l'image. SHORT_SHA n'est renseigne QUE par un declencheur :
+  # une soumission manuelle le laisse vide et le build echoue sur un nom
+  # d'image invalide. Passer _TAG explicitement rend les deux voies possibles.
+  _TAG: manual
 
 steps:
 
@@ -28,7 +32,7 @@ steps:
     args:
       - build
       - --file=Dockerfile.cloudrun
-      - --tag=us-central1-docker.pkg.dev/$PROJECT_ID/mgvaovao/inference:$SHORT_SHA
+      - --tag=us-central1-docker.pkg.dev/$PROJECT_ID/mgvaovao/inference:${_TAG}
       - --tag=us-central1-docker.pkg.dev/$PROJECT_ID/mgvaovao/inference:latest
       - --cache-from=us-central1-docker.pkg.dev/$PROJECT_ID/mgvaovao/inference:latest
       - .
@@ -37,7 +41,7 @@ steps:
   # ── 2. Push ──────────────────────────────────────────────────────────────────
   - id: push-sha
     name: gcr.io/cloud-builders/docker
-    args: [push, "us-central1-docker.pkg.dev/$PROJECT_ID/mgvaovao/inference:$SHORT_SHA"]
+    args: [push, "us-central1-docker.pkg.dev/$PROJECT_ID/mgvaovao/inference:${_TAG}"]
     waitFor: [build-inference]
 
   - id: push-latest
@@ -54,7 +58,7 @@ steps:
       - run
       - deploy
       - ${_SERVICE}
-      - --image=us-central1-docker.pkg.dev/$PROJECT_ID/mgvaovao/inference:$SHORT_SHA
+      - --image=us-central1-docker.pkg.dev/$PROJECT_ID/mgvaovao/inference:${_TAG}
       - --region=${_REGION}
       - --project=$PROJECT_ID
       - --platform=managed
@@ -76,7 +80,7 @@ steps:
       - --quiet
 
 images:
-  - us-central1-docker.pkg.dev/$PROJECT_ID/mgvaovao/inference:$SHORT_SHA
+  - us-central1-docker.pkg.dev/$PROJECT_ID/mgvaovao/inference:${_TAG}
   - us-central1-docker.pkg.dev/$PROJECT_ID/mgvaovao/inference:latest
 
 # Default machine = n1-highcpu-1 → 120 free build-minutes/day.
