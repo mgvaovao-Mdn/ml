@@ -71,8 +71,21 @@ def _audio_from_bytes(raw: bytes) -> tuple[np.ndarray, int]:
 
 
 def _audio_url(request: Request, audio_path: str) -> str:
+    """
+    URL publique du fichier synthetise.
+
+    Cloud Run termine TLS en amont et parle a l'application en clair :
+    `url_for` renvoyait donc une adresse en `http://` alors que la page qui la
+    demande est servie en `https://`. Le navigateur bloque ce melange, et le
+    son ne se jouait pas — sans message, la demonstration semblait muette.
+    L'en-tete pose par le proxy dit le schema d'origine.
+    """
     filename = os.path.basename(audio_path)
-    return str(request.url_for("get_audio", filename=filename))
+    url = request.url_for("get_audio", filename=filename)
+    schema = request.headers.get("x-forwarded-proto")
+    if schema:
+        url = url.replace(scheme=schema.split(",")[0].strip())
+    return str(url)
 
 
 def _latency(result: PipelineResult) -> LatencyBreakdown:

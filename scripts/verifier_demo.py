@@ -24,6 +24,7 @@ import argparse
 import asyncio
 import json
 import sys
+import tempfile
 import time
 import wave
 from pathlib import Path
@@ -33,7 +34,21 @@ import requests
 import websockets
 
 RACINE = Path(__file__).resolve().parent.parent
-AUDIO_ESSAI = RACINE / "test_input.wav"
+
+# Phrase servant d'essai. Courte, et dans une langue que le modele de
+# reconnaissance traite bien : le but est de verifier que la chaine repond, pas
+# d'evaluer sa qualite.
+PHRASE_ESSAI = "Bonjour, comment allez-vous aujourd'hui ?"
+
+# L'echantillon est produit par le service lui-meme, via /translate/text.
+#
+# Le depot contient bien des fichiers `test_*.wav`, mais ils sont silencieux :
+# le detecteur d'activite vocale n'y trouvait aucune parole, ne signalait donc
+# jamais de fin de tour, et la verification echouait sur un defaut de
+# l'echantillon en accusant le service. Faire synthetiser la voix par le
+# service garantit un echantillon parlant, au bon format, sans ajouter de
+# fichier binaire au depot — et eprouve au passage la voie REST.
+CACHE_VOIX = Path(tempfile.gettempdir()) / "mgvaovao_voix_essai.wav"
 
 # Le pipeline complet (VAD, ASR, traduction, synthese) prend quelques secondes,
 # et davantage sur une instance qui vient de demarrer a froid.
@@ -134,15 +149,46 @@ def verifier_quotas(base: str) -> dict:
 
 # ── verification WebSocket ────────────────────────────────────────────────
 
-def charger_audio() -> bytes:
-    """Lit l'echantillon et le rend en Float32 PCM 16 kHz, le format attendu."""
-    if not AUDIO_ESSAI.is_file():
-        raise Echec(f"echantillon introuvable : {AUDIO_ESSAI}")
-    with wave.open(str(AUDIO_ESSAI), "rb") as w:
+def obtenir_voix(base: str, dialecte: str, journal: Journal) -> Path:
+    """
+    Rend un fichier WAV parlant, en le faisant synthetiser au besoin.
+
+    Le resultat est garde dans le repertoire temporaire : relancer la
+    verification ne refait pas travailler le GPU pour rien.
+    """
+    if CACHE_VOIX.is_file() and CACHE_VOIX.stat().st_size > 10_000:
+        return CACHE_VOIX
+
+    journal.info("synthese d'un echantillon de voix par le service…")
+    reponse = requests.post(
+        f"{base}/translate/text",
+        json={"text": PHRASE_ESSAI, "dialect": dialecte, "src_lang": "fr"},
+        timeout=ATTENTE_RESULTAT_S,
+    )
+    if reponse.status_code != 200:
+        raise Echec(f"/translate/text a repondu {reponse.status_code}")
+    url = (reponse.json() or {}).get("audio_url")
+    if not url:
+        raise Echec("/translate/text n'a pas renvoye d'audio_url")
+
+    fichier = requests.get(url, timeout=120)
+    if fichier.status_code != 200:
+        raise Echec(f"audio_url a repondu {fichier.status_code}")
+    CACHE_VOIX.write_bytes(fichier.content)
+    return CACHE_VOIX
+
+
+def charger_audio(chemin: Path) -> bytes:
+    """Lit un WAV mono 16 kHz et le rend en Float32 PCM, le format attendu."""
+    with wave.open(str(chemin), "rb") as w:
         if w.getframerate() != 16_000 or w.getnchannels() != 1:
             raise Echec("l'echantillon doit etre mono a 16 kHz")
         brut = w.readframes(w.getnframes())
     entiers = np.frombuffer(brut, dtype=np.int16).astype(np.float32) / 32768.0
+    if float(np.abs(entiers).max()) < 0.01:
+        # Un echantillon muet ferait echouer la verification pour une raison
+        # qui n'a rien a voir avec le service.
+        raise Echec(f"echantillon silencieux : {chemin}")
     return entiers.tobytes()
 
 
@@ -150,8 +196,8 @@ def url_ws(base: str, chemin: str) -> str:
     return base.replace("https://", "wss://").replace("http://", "ws://") + chemin
 
 
-async def _un_aller_retour(base: str, dialecte: str, journal: Journal) -> str:
-    pcm = charger_audio()
+async def _un_aller_retour(base: str, dialecte: str, voix: Path, journal: Journal) -> str:
+    pcm = charger_audio(voix)
     # Des trames de vingt millisecondes, comme en envoie le navigateur. Un seul
     # bloc d'un coup ne ferait pas travailler le detecteur d'activite vocale de
     # la meme facon, et ne testerait donc pas le chemin reel.
@@ -261,6 +307,10 @@ def main() -> int:
         help="eprouve aussi le refus au-dela de la limite de sessions",
     )
     analyseur.add_argument(
+        "--audio",
+        help="WAV mono 16 kHz a envoyer ; a defaut, le service synthetise l'echantillon",
+    )
+    analyseur.add_argument(
         "--sans-audio",
         action="store_true",
         help="s'en tient aux verifications HTTP, sans solliciter le GPU",
@@ -296,11 +346,23 @@ def main() -> int:
     elif modeles is None:
         journal.info("aller-retour audio ignore : modeles indisponibles")
     else:
-        verifier(
-            journal,
-            "aller-retour audio complet",
-            lambda: asyncio.run(_un_aller_retour(base, args.dialecte, journal)),
+        voix = (
+            Path(args.audio)
+            if args.audio
+            else verifier(
+                journal,
+                "synthese d'un echantillon (voie REST)",
+                lambda: obtenir_voix(base, args.dialecte, journal),
+            )
         )
+        if voix is None:
+            journal.info("aller-retour audio ignore : pas d'echantillon")
+        else:
+            verifier(
+                journal,
+                "aller-retour audio complet",
+                lambda: asyncio.run(_un_aller_retour(base, args.dialecte, voix, journal)),
+            )
 
     if args.quotas and isinstance(etat, dict):
         limite = etat["limites"]["sessions_par_ip"]
