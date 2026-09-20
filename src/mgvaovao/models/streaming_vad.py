@@ -17,9 +17,11 @@ from __future__ import annotations
 import numpy as np
 import torch
 
-from mgvaovao.core.config import Settings
+# SILERO_VAD_REF est une reference epinglee, definie une seule fois dans la
+# configuration : les trois endroits qui chargent Silero doivent charger la
+# meme version, sinon le cache prepare au build ne sert a rien.
+from mgvaovao.core.config import Settings, SILERO_VAD_REF as SILERO_REPO
 
-SILERO_REPO = "snakers4/silero-vad"
 CHUNK_SAMPLES = 512   # Silero requirement at 16 kHz
 TARGET_SR = 16_000
 

@@ -5,6 +5,21 @@ from typing import List
 from pydantic import Field, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# ── Detection d'activite vocale ─────────────────────────────────────────────
+#
+# Reference EPINGLEE du depot Silero VAD, et non `master`.
+#
+# torch.hub.load telecharge par defaut la branche master du depot amont : la
+# construction de l'image dependait donc de l'etat de GitHub le jour ou elle
+# tournait. Elle a fini par casser sans qu'une ligne de ce depot change, le
+# jour ou Silero a ajoute un module important onnxruntime au niveau module.
+#
+# v5.1.2 expose exactement le 5-uplet d'utilitaires que ce code deballe, et
+# n'exige pas onnxruntime. Relever cette version est un choix delibere, a
+# faire en verifiant ces deux points.
+SILERO_VAD_REF: str = "snakers4/silero-vad:v5.1.2"
+
+
 # ── Dialect registry ────────────────────────────────────────────────────────
 
 DIALECTS: List[str] = ["plt_latn", "betsileo", "betsimisaraka", "sakalava"]

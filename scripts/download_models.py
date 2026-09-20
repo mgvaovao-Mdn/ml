@@ -17,8 +17,12 @@ os.makedirs(WHISPER_CACHE, exist_ok=True)
 print(">>> Downloading Silero VAD...", flush=True)
 import torch
 torch.hub.set_dir(HUB_DIR)
+# La meme reference epinglee que l'execution : telecharger une autre version
+# que celle qui sera chargee remplirait le cache pour rien, et le service
+# retelechargerait au demarrage.
+from mgvaovao.core.config import SILERO_VAD_REF
 model, _ = torch.hub.load(
-    "snakers4/silero-vad", "silero_vad",
+    SILERO_VAD_REF, "silero_vad",
     trust_repo=True, force_reload=False,
 )
 del model

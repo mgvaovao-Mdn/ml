@@ -30,11 +30,13 @@ class SileroVAD:
         self.min_silence_ms = min_silence_ms
         self.speech_pad_ms  = speech_pad_ms
 
-        from ..core.config import settings
+        from ..core.config import settings, SILERO_VAD_REF
         torch.hub.set_dir(str(settings.torch_hub_dir))
 
+        # Reference epinglee : sans elle, torch.hub prend master et le
+        # comportement du VAD change au gre du depot amont.
         self._model, utils = torch.hub.load(
-            "snakers4/silero-vad",
+            SILERO_VAD_REF,
             "silero_vad",
             trust_repo=True,
             force_reload=False,
