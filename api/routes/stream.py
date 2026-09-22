@@ -18,6 +18,7 @@ import asyncio
 import json
 import base64
 import logging
+import wave
 from functools import partial
 
 import numpy as np
@@ -74,6 +75,27 @@ async def _attendre_pipeline(app, dialect: str, websocket=None):
         await asyncio.sleep(1.0)
 
 
+def _duree_wav_s(chemin: str) -> float | None:
+    """
+    Duree de l'audio synthetise, en secondes.
+
+    Elle borne le delai au bout duquel le serveur se remet a ecouter si le
+    client ne signale pas la fin de lecture. Sans elle, TurnController retombe
+    sur sa borne maximale — soixante secondes — et la session reste sourde tout
+    ce temps apres chaque reponse.
+    """
+    try:
+        with wave.open(chemin, "rb") as w:
+            cadence = w.getframerate()
+            if not cadence:
+                return None
+            return w.getnframes() / float(cadence)
+    except Exception:
+        # Une duree indisponible ne doit pas faire echouer la reponse : on
+        # retombe sur le comportement d'avant, degrade mais fonctionnel.
+        return None
+
+
 def _run_pipeline_sync(pipeline, audio: np.ndarray, src_lang: str | None) -> dict:
     result = pipeline.run_audio(audio, 16_000, src_lang)
     with open(result.audio_path, "rb") as f:
@@ -85,6 +107,9 @@ def _run_pipeline_sync(pipeline, audio: np.ndarray, src_lang: str | None) -> dic
         "malagasy_text": result.malagasy_text,
         "dialect": result.dialect,
         "audio_b64": base64.b64encode(audio_bytes).decode(),
+        # Lue par le client pour savoir combien de temps dure la lecture, et par
+        # le serveur pour dimensionner son delai de garde.
+        "audio_duration_s": _duree_wav_s(result.audio_path),
         "latency_ms": result.latency_ms,
     }
 

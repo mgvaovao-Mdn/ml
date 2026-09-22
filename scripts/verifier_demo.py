@@ -258,6 +258,74 @@ async def _un_aller_retour(base: str, dialecte: str, voix: Path, journal: Journa
         )
 
 
+async def _deux_tours(base: str, dialecte: str, voix: Path, journal: Journal) -> str:
+    """
+    Enchaine deux phrases dans la meme session, comme le fait un utilisateur.
+
+    C'est le defaut signale en demonstration : la premiere phrase revenait
+    traduite, la seconde restait sans reponse. Le serveur passe en SPEAKING des
+    qu'il envoie un resultat et jette tout l'audio jusqu'a recevoir
+    `playback_finished`. Le client ne l'envoyait jamais, et l'interface
+    affichait « En ecoute… » pendant les soixante secondes de delai de garde.
+
+    Le test rejoue exactement cela : premiere phrase, accuse de fin de lecture
+    comme doit le faire un client correct, puis seconde phrase.
+    """
+    pcm = charger_audio(voix)
+    taille = 320 * 4
+    trames = [pcm[i:i + taille] for i in range(0, len(pcm), taille)]
+    silence = np.zeros(320, dtype=np.float32).tobytes()
+
+    async def un_tour(ws, numero: int) -> dict:
+        for trame in trames:
+            await ws.send(trame)
+            await asyncio.sleep(0.02)
+        for _ in range(60):
+            await ws.send(silence)
+            await asyncio.sleep(0.02)
+
+        debut = time.time()
+        while time.time() - debut < ATTENTE_RESULTAT_S:
+            try:
+                message = await asyncio.wait_for(ws.recv(), timeout=10)
+            except asyncio.TimeoutError:
+                await ws.send(silence)
+                continue
+            if isinstance(message, bytes):
+                continue
+            try:
+                donnees = json.loads(message)
+            except ValueError:
+                continue
+            if donnees.get("type") == "error":
+                raise Echec(f"tour {numero} : {donnees.get('message')}")
+            if donnees.get("type") == "result" or donnees.get("audio_b64"):
+                return donnees
+        raise Echec(
+            f"tour {numero} : aucune reponse en {ATTENTE_RESULTAT_S} s "
+            "(le serveur ecoute-t-il encore ?)"
+        )
+
+    async with websockets.connect(
+        url_ws(base, f"/ws/stream/{dialecte}"), max_size=None, open_timeout=60
+    ) as ws:
+        premier = await un_tour(ws, 1)
+        duree = premier.get("audio_duration_s")
+        if not duree:
+            # Sans elle, TurnController retombe sur sa borne de soixante
+            # secondes : la session reste sourde bien au-dela de la lecture.
+            raise Echec("le resultat ne porte pas audio_duration_s")
+
+        # Ce que fait un client correct a la fin de la lecture, et ce que
+        # l'interface omettait.
+        await ws.send(json.dumps({"type": "playback_finished"}))
+        await asyncio.sleep(0.4)
+
+        second = await un_tour(ws, 2)
+        texte = second.get("malagasy_text") or ""
+        return f"deux tours enchaines, audio de {duree:.1f} s — « {texte[:40]} »"
+
+
 async def _refus_attendu(base: str, dialecte: str, limite: int) -> str:
     """
     Ouvre une session de plus que la limite et attend un refus motive.
@@ -362,6 +430,11 @@ def main() -> int:
                 journal,
                 "aller-retour audio complet",
                 lambda: asyncio.run(_un_aller_retour(base, args.dialecte, voix, journal)),
+            )
+            verifier(
+                journal,
+                "deux phrases dans la meme session",
+                lambda: asyncio.run(_deux_tours(base, args.dialecte, voix, journal)),
             )
 
     if args.quotas and isinstance(etat, dict):

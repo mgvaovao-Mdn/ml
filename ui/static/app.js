@@ -59,6 +59,10 @@ function connect() {
     setBtn(false);
     elProcessingBanner.classList.remove("visible");
     elSpeakerAnim.classList.remove("active");
+    // Sans cette remise a zero, une deconnexion survenue pendant la lecture
+    // laissait le drapeau leve : la session suivante s'ouvrait en se croyant
+    // en train de parler, et n'affichait plus jamais « En ecoute… ».
+    enLecture = false;
     if (disconnectReason === "inactivity") {
       showWelcomeModal(true);
       disconnectReason = "manual";
@@ -72,6 +76,14 @@ function disconnect() {
 }
 
 // ── Message handler ───────────────────────────────────────────────────────────
+
+/**
+ * Vrai tant que le serveur joue sa réponse et n'écoute donc pas.
+ *
+ * Il suit le message `turn` du serveur, qui fait autorité : l'interface le
+ * devinait de son côté, et se trompait.
+ */
+let enLecture = false;
 
 function handleMessage(msg) {
   switch (msg.type) {
@@ -96,9 +108,30 @@ function handleMessage(msg) {
         el.classList.add("updated");
         setTimeout(() => el.classList.remove("updated"), 1500);
       });
-      elState.textContent = "En écoute…";
-      elState.className   = "state listening";
+      // Surtout pas « En écoute… » ici : le serveur passe en SPEAKING dès
+      // qu'il envoie ce résultat, et ignore tout l'audio jusqu'à la fin de la
+      // lecture. L'annoncer à l'écoute invitait à parler dans le vide.
+      enLecture = true;
+      elState.textContent = "Réponse en cours de lecture…";
+      elState.className   = "state speaking";
       log(`Résultat — ${msg.latency_ms.total} ms total`);
+      break;
+
+    // Le serveur annonce lui-même son tour de parole. S'en remettre à lui
+    // plutôt que de le deviner : l'interface et le serveur se contredisaient,
+    // et c'est l'interface qui avait tort.
+    case "turn":
+      enLecture = msg.state === "speaking";
+      if (msg.state === "listening") {
+        elState.textContent = "En écoute…";
+        elState.className   = "state listening";
+      } else if (msg.state === "speaking") {
+        elState.textContent = "Réponse en cours de lecture…";
+        elState.className   = "state speaking";
+      } else if (msg.state === "processing") {
+        elState.textContent = "Traitement…";
+        elState.className   = "state processing";
+      }
       break;
 
     // Le serveur previent qu'il charge encore ses modeles sur le GPU. Sans ce
@@ -135,7 +168,14 @@ function updateVAD(state, prob) {
       elState.className   = "state trailing";
       break;
     default:
-      if (elState.className !== "state processing") {
+      // Pendant la lecture de la réponse, le serveur ignore l'audio : repasser
+      // l'affichage à « En écoute… » sur une trame VAD contredirait le tour en
+      // cours et ramènerait le défaut que l'on vient de corriger.
+      //
+      // Un drapeau, et non la classe CSS : « state speaking » sert aussi à
+      // l'indicateur VAD quand c'est la PERSONNE qui parle. S'appuyer dessus
+      // aurait figé l'indicateur dès le premier mot prononcé.
+      if (elState.className !== "state processing" && !enLecture) {
         elState.textContent = "En écoute…";
         elState.className   = "state listening";
       }
@@ -210,19 +250,48 @@ function sendChunk(samples) {
 
 // ── Audio playback ────────────────────────────────────────────────────────────
 
+/**
+ * Joue la reponse synthetisee, puis rend la parole au serveur.
+ *
+ * Le protocole attend `playback_finished` a la fin de la lecture : tant qu'il
+ * ne l'a pas recu, le serveur reste en SPEAKING et jette tout l'audio entrant,
+ * pour ne pas reprendre dans le micro la voix qu'il est en train de jouer.
+ *
+ * Ce message n'etait jamais envoye. Le serveur attendait alors son delai de
+ * garde — soixante secondes — avant de reecouter, pendant que l'interface
+ * affichait « En ecoute… ». La deuxieme phrase de la personne partait donc
+ * dans le vide, sans que rien ne l'indique.
+ *
+ * Il est envoye sur les trois issues possibles, y compris les echecs : une
+ * lecture qui n'aboutit pas ne doit pas rendre la session sourde. Un drapeau
+ * garantit un envoi unique, `onended` et `onerror` pouvant se suivre.
+ */
 function playAudio(b64) {
   const bytes  = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
   const blob   = new Blob([bytes], { type: "audio/wav" });
   const url    = URL.createObjectURL(blob);
   const player = new Audio(url);
-  elSpeakerAnim.classList.add("active");
-  player.onended = () => {
+
+  let rendu = false;
+  const rendreLaParole = () => {
+    if (rendu) return;
+    rendu = true;
     URL.revokeObjectURL(url);
     elSpeakerAnim.classList.remove("active");
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: "playback_finished" }));
+    }
+  };
+
+  elSpeakerAnim.classList.add("active");
+  player.onended = rendreLaParole;
+  player.onerror = () => {
+    log("Lecture de la reponse impossible.");
+    rendreLaParole();
   };
   player.play().catch((e) => {
     log(`Erreur lecture : ${e.message}`);
-    elSpeakerAnim.classList.remove("active");
+    rendreLaParole();
   });
 }
 
