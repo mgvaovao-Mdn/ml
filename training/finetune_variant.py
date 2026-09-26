@@ -53,6 +53,12 @@ import sys
 import tempfile
 from pathlib import Path
 
+# Import absolu, et non relatif : le script est lance par
+# `python training/finetune_variant.py`, donc comme module principal et non
+# comme membre d'un paquet. Un `from . import` echouerait au demarrage.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import stockage  # noqa: E402
+
 # Corpus minimal. En deca, l'affinage degrade le modele de base : le lancer
 # serait depenser un GPU pour obtenir moins bien que gratuitement.
 MIN_LIGNES = int(os.environ.get("FINETUNE_MIN_LIGNES", "200"))
@@ -68,8 +74,9 @@ def journal(message: str) -> None:
     print(message, flush=True)
 
 
-def gcloud_storage(*args: str) -> None:
-    subprocess.run(["gcloud", "storage", *args], check=True)
+# L'acces au stockage passe par l'API REST, pas par le CLI : l'image
+# d'inference ne contient pas `gcloud`, et le supposer present a fait echouer
+# deux lancements apres avoir demarre un GPU.
 
 
 def lire_env(nom: str, obligatoire: bool = True, defaut: str = "") -> str:
@@ -92,7 +99,7 @@ def telecharger_dataset(uri: str, destination: Path, themes: list[str]) -> list[
     fois.
     """
     journal(f"Lecture du corpus : {uri}")
-    gcloud_storage("cp", uri, str(destination))
+    stockage.telecharger(uri, destination)
     with io.open(destination, encoding="utf-8", newline="") as f:
         toutes = [
             r
@@ -184,11 +191,11 @@ def preparer_synthese(lignes: list[dict], base: Path) -> int:
 
 
 def deposer(local: Path, uri: str) -> None:
-    if not local.is_dir() or not any(local.iterdir()):
+    deposes = stockage.deposer_repertoire(local, uri)
+    if deposes == 0:
         journal(f"  rien a deposer dans {uri}")
         return
-    journal(f"Depot : {uri}")
-    gcloud_storage("cp", "-r", f"{local}/.", uri)
+    journal(f"Depot : {deposes} fichier(s) -> {uri}")
 
 
 def main() -> int:
