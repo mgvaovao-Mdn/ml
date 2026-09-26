@@ -136,14 +136,16 @@ steps:
     args:
       - "-c"
       - |
-        # --task-timeout est une borne dure : un entrainement qui derape est
-        # tue par la plateforme, sans surveillance humaine.
+        # Cloud Run plafonne la duree d'une tache a 3600 s DES QU'UN GPU est
+        # demande : demander davantage fait echouer le deploiement du job,
+        # avec « must be between 0 and 3600 seconds when using GPU ».
+        # C'est donc aussi la borne dure qui tue un entrainement qui derape.
         gcloud run jobs deploy ${_FINETUNE_JOB} \
           --image=us-central1-docker.pkg.dev/$PROJECT_ID/mgvaovao/inference:${_TAG} \
           --region=${_REGION} --project=$PROJECT_ID \
           --gpu=1 --gpu-type=nvidia-l4 --no-gpu-zonal-redundancy \
           --cpu=8 --memory=32Gi \
-          --task-timeout=7200s --max-retries=0 --parallelism=1 \
+          --task-timeout=3600s --max-retries=0 --parallelism=1 \
           --command="python" \
           --args="training/finetune_variant.py" \
           --set-env-vars="MGVAOVAO_DEVICE=cuda,FINETUNE_MIN_LIGNES=${_FINETUNE_MIN_LIGNES}" \

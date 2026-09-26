@@ -8,8 +8,10 @@ definition de job sert donc toutes les declinaisons :
 
     VARIANT_ID      betsileo__en__18_25__female
     DATASET_URI     gs://kozy-dataset/variants/<id>/dataset.csv
-    OUTPUT_PREFIX   gs://mgvaovao-ia-checkpoints/variants/<id>
+    OUTPUT_PREFIX   gs://mgvaovao-ia-checkpoints/variants/<id>/v2
     BRICKS          mt,tts
+    THEMES          sante,vie_quotidienne      (vide = toutes)
+    VERSION         2
 
 Pourquoi un job Cloud Run et non une machine virtuelle
 ──────────────────────────────────────────────────────
@@ -78,17 +80,38 @@ def lire_env(nom: str, obligatoire: bool = True, defaut: str = "") -> str:
     return valeur
 
 
-def telecharger_dataset(uri: str, destination: Path) -> list[dict]:
+def telecharger_dataset(uri: str, destination: Path, themes: list[str]) -> list[dict]:
+    """
+    Lit le corpus de la declinaison, filtre sur les thematiques demandees.
+
+    Le filtrage se fait sur la colonne `thematique` du fichier, jamais en
+    interrogeant la plateforme : un incident sur la base de donnees ne doit pas
+    empecher un entrainement de tourner. C'est la raison pour laquelle le
+    stockage ne decoupe PAS par thematique — un fichier qui porte la sienne en
+    colonne se suffit a lui-meme, et evite d'ecrire les memes lignes quatorze
+    fois.
+    """
     journal(f"Lecture du corpus : {uri}")
     gcloud_storage("cp", uri, str(destination))
     with io.open(destination, encoding="utf-8", newline="") as f:
-        lignes = [
+        toutes = [
             r
             for r in csv.DictReader(f)
             if (r.get("source") or "").strip() and (r.get("target") or "").strip()
         ]
-    journal(f"  {len(lignes)} paire(s) utilisable(s)")
-    return lignes
+
+    if not themes:
+        journal(f"  {len(toutes)} paire(s), toutes thematiques")
+        return toutes
+
+    retenues = [r for r in toutes if (r.get("thematique") or "").strip() in themes]
+    journal(
+        f"  {len(retenues)} paire(s) sur {len(toutes)} "
+        f"apres filtrage sur : {', '.join(themes)}"
+    )
+    if retenues and "thematique" not in toutes[0]:
+        journal("  ATTENTION : le fichier ne porte pas de colonne `thematique`.")
+    return retenues
 
 
 def preparer_splits(lignes: list[dict], base: Path, graine: int = 42) -> None:
@@ -173,9 +196,12 @@ def main() -> int:
     dataset_uri = lire_env("DATASET_URI")
     sortie_uri = lire_env("OUTPUT_PREFIX").rstrip("/")
     briques = [b.strip() for b in lire_env("BRICKS", False, "mt,tts").split(",") if b.strip()]
+    themes = [t.strip() for t in lire_env("THEMES", False, "").split(",") if t.strip()]
+    version = lire_env("VERSION", False, "1")
 
-    journal(f"=== Declinaison {variant} ===")
-    journal(f"  briques : {', '.join(briques) or 'aucune'}")
+    journal(f"=== Declinaison {variant} — V{version} ===")
+    journal(f"  briques     : {', '.join(briques) or 'aucune'}")
+    journal(f"  thematiques : {', '.join(themes) or 'toutes'}")
 
     with tempfile.TemporaryDirectory() as tmp:
         racine = Path(tmp)
@@ -184,7 +210,7 @@ def main() -> int:
         os.environ["MGVAOVAO_DATASET_DIR"] = str(racine / "dataset")
         os.environ["MGVAOVAO_CHECKPOINTS_DIR"] = str(racine / "checkpoints")
 
-        lignes = telecharger_dataset(dataset_uri, racine / "dataset.csv")
+        lignes = telecharger_dataset(dataset_uri, racine / "dataset.csv", themes)
         if len(lignes) < MIN_LIGNES:
             journal(
                 f"Corpus trop maigre ({len(lignes)} < {MIN_LIGNES}) : un modele affine "
