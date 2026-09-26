@@ -487,7 +487,7 @@
       <p id="model-notice" class="model-notice"></p>
     </div>
     <div class="field">
-      <label for="sel-src-lang">Langue source</label>
+      <label for="sel-src-lang">Langue d'entrée</label>
       <select id="sel-src-lang">
         <option value="auto">Détection automatique</option>
         <option value="fr">Français</option>
@@ -498,8 +498,35 @@
         <option value="pt">Portugais</option>
       </select>
     </div>
+    <!--
+      Les deux axes de la VOIX. Ce qu'une entreprise commande n'est pas un
+      dialecte mais une combinaison — « une voix betsileo, jeune, feminine,
+      qui comprend l'anglais ». Les valeurs sont peuplees depuis le registre
+      des declinaisons de la plateforme de collecte : en ecrire ici figerait
+      des options que le CRUD peut changer.
+    -->
+    <div class="field">
+      <label for="sel-age">Tranche d'âge de la voix</label>
+      <select id="sel-age">
+        <option value="">Toutes</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="sel-gender">Sexe de la voix</label>
+      <select id="sel-gender">
+        <option value="">Tous</option>
+      </select>
+    </div>
     <button id="btn-toggle" disabled>⏹ Arrêter</button>
   </div>
+
+  <!--
+    Ce que la combinaison choisie vaut reellement : corpus disponible, et si
+    un modele lui est propre. Sans cette ligne, la demonstration laisserait
+    croire a une voix sur mesure la ou le modele de base repond pour tout le
+    monde.
+  -->
+  <p id="variant-notice" class="model-notice"></p>
 
   <!-- VAD meter -->
   <div class="vad-row">

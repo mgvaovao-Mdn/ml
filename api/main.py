@@ -166,10 +166,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from .routes import health, dialects, translate, stream  # noqa: E402
+from .routes import health, dialects, translate, stream, variants  # noqa: E402
 
 app.include_router(health.router,    tags=["Health"])
 app.include_router(dialects.router,  prefix="/dialects",  tags=["Dialects"])
+app.include_router(variants.router,  prefix="/variants",  tags=["Variants"])
 app.include_router(translate.router, prefix="/translate",  tags=["Translate"])
 app.include_router(stream.router,    prefix="/ws",         tags=["Stream"])
 

@@ -29,6 +29,7 @@ from mgvaovao.models.streaming_vad import StreamingVAD
 
 from ..quotas import COMPTEURS, Refus, adresse
 from .turn_state import TurnController
+from .variants import resoudre as resoudre_declinaison
 
 log = logging.getLogger("mgvaovao.stream")
 router = APIRouter()
@@ -119,6 +120,8 @@ async def stream_audio(
     websocket: WebSocket,
     dialect: str,
     src_lang: str | None = None,
+    age_range: str | None = None,
+    gender: str | None = None,
 ):
     """
     Real-time audio translation via WebSocket.
@@ -165,6 +168,28 @@ async def stream_audio(
 
     await websocket.accept()
     debut_session = asyncio.get_event_loop().time()
+
+    # La declinaison demandee — dialecte de sortie, langue d'entree, tranche
+    # d'age et sexe de la voix. Elle ne change pas encore le modele servi :
+    # aucun entrainement propre n'existe, et tout repose sur le modele de base.
+    # Elle est resolue et annoncee quand meme, pour deux raisons : la personne
+    # doit savoir ce qu'elle ecoute, et le jour ou un point de controle propre
+    # apparait, seul le chargement changera — pas le protocole.
+    declinaison = resoudre_declinaison(dialect, src_lang, age_range, gender)
+    if declinaison is not None:
+        await websocket.send_json({
+            "type": "variant",
+            "id": declinaison.get("id"),
+            "dialecte": declinaison.get("dialecte"),
+            "langue": declinaison.get("langue"),
+            "trancheAge": declinaison.get("trancheAge"),
+            "sexe": declinaison.get("sexe"),
+            "corpus": declinaison.get("corpus"),
+            # Faux tant qu'aucun modele n'a ete entraine pour cette
+            # combinaison : le taire ferait passer une demonstration generique
+            # pour une voix sur mesure.
+            "modele_propre": bool((declinaison.get("modele") or {}).get("propre")),
+        })
 
     def duree_session() -> float:
         return asyncio.get_event_loop().time() - debut_session

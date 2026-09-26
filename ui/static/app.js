@@ -28,7 +28,8 @@ let inactivityTimer  = null;
 let disconnectReason = "manual"; // "manual" | "inactivity"
 
 // ── DOM refs (populated in init()) ───────────────────────────────────────────
-let btnToggle, selDialect, selSrcLang;
+let btnToggle, selDialect, selSrcLang, selAge, selGender;
+let elVariantNotice;
 let elState, elProb, elTranscript, elTranslation, elLatency, elLog;
 let elLoadingOverlay, elLoadingMsg, elProcessingBanner, elSpeakerAnim;
 let elWelcomeModal, elWelcomeBody, elBtnStart;
@@ -38,18 +39,31 @@ let elWelcomeModal, elWelcomeBody, elBtnStart;
 // Plateforme de collecte : le lien de retour depuis la demonstration.
 const COLLECTE_URL = "https://kozy.mg";
 
-function wsUrl(dialect, srcLang) {
+/**
+ * URL de session, portant la combinaison choisie.
+ *
+ * Les quatre axes voyagent ensemble : dialecte de sortie, langue d'entree,
+ * tranche d'age et sexe de la voix. C'est la combinaison, et non le dialecte
+ * seul, qui designe ce qu'une entreprise commanderait.
+ */
+function wsUrl(dialect, srcLang, age, gender) {
   const proto = location.protocol === "https:" ? "wss" : "ws";
-  const lang  = srcLang !== "auto" ? `?src_lang=${srcLang}` : "";
-  return `${proto}://${location.host}/ws/stream/${dialect}${lang}`;
+  const q = new URLSearchParams();
+  if (srcLang !== "auto") q.set("src_lang", srcLang);
+  if (age) q.set("age_range", age);
+  if (gender) q.set("gender", gender);
+  const suffixe = q.toString() ? `?${q.toString()}` : "";
+  return `${proto}://${location.host}/ws/stream/${dialect}${suffixe}`;
 }
 
 function connect() {
   const dialect = selDialect.value;
   const srcLang = selSrcLang.value;
+  const age     = selAge ? selAge.value : "";
+  const gender  = selGender ? selGender.value : "";
 
-  log(`Connecting [dialect=${dialect} src=${srcLang}]…`);
-  ws = new WebSocket(wsUrl(dialect, srcLang));
+  log(`Connexion [dialecte=${dialect} entree=${srcLang} age=${age || "tous"} sexe=${gender || "tous"}]…`);
+  ws = new WebSocket(wsUrl(dialect, srcLang, age, gender));
 
   ws.onopen    = () => { log("Connecté"); startMic(); };
   ws.onmessage = (e) => handleMessage(JSON.parse(e.data));
@@ -137,6 +151,21 @@ function handleMessage(msg) {
     // Le serveur previent qu'il charge encore ses modeles sur le GPU. Sans ce
     // cas, la session restait muette une quarantaine de secondes au demarrage
     // a froid et donnait l'impression que rien n'etait envoye.
+    // Le serveur confirme la combinaison qu'il sert. C'est lui qui fait foi :
+    // il elargit la demande quand la combinaison exacte n'existe pas, et
+    // l'ecran doit montrer ce qui repond, pas ce qui a ete demande.
+    case "variant":
+      log(
+        `Declinaison servie : ${msg.id || "inconnue"}` +
+          (msg.modele_propre ? " (modele propre)" : " (modele general)")
+      );
+      if (elVariantNotice && !msg.modele_propre) {
+        elVariantNotice.textContent =
+          "Aucun modele n'est encore entraine pour cette combinaison : le modele general repond, " +
+          "la voix ne sera donc ni de cette tranche d'age ni de ce sexe.";
+      }
+      break;
+
     case "loading":
       log(msg.message || "Chargement des modeles…");
       elState.textContent = "Chargement des modèles…";
@@ -317,6 +346,12 @@ function setBtn(active) {
   btnToggle.textContent = active ? "⏹ Arrêter l'écoute" : "🎙 Reprendre l'écoute";
   btnToggle.classList.toggle("active", active);
   selDialect.disabled = active;
+  // Les axes de la declinaison sont figes pendant l'enregistrement : les
+  // changer en cours de session ne changerait rien au modele deja charge, et
+  // l'ecran mentirait sur ce qui repond.
+  if (selSrcLang) selSrcLang.disabled = active;
+  if (selAge) selAge.disabled = active;
+  if (selGender) selGender.disabled = active;
   selSrcLang.disabled = active;
 }
 
@@ -442,12 +477,108 @@ async function checkReady() {
   }
 }
 
+// ── Declinaisons ──────────────────────────────────────────────────────────────
+
+/** Registre des combinaisons, tel que la plateforme de collecte le publie. */
+let declinaisons = { axes: {}, variants: [] };
+
+const LIBELLE_SEXE = { FEMALE: "Feminine", MALE: "Masculine" };
+
+/**
+ * Peuple les selecteurs d'age et de sexe depuis le registre.
+ *
+ * Les valeurs ne sont pas ecrites dans la page : ce sont les categories du
+ * CRUD de collecte qui les decident, et en figer une liste ici la ferait
+ * diverger au premier ajout.
+ */
+async function chargerDeclinaisons() {
+  try {
+    const res = await fetch("/variants/");
+    if (!res.ok) throw new Error(String(res.status));
+    declinaisons = await res.json();
+  } catch (e) {
+    log("Registre des declinaisons indisponible — axes de voix desactives.");
+    return;
+  }
+
+  const remplir = (el, valeurs, libelleTout) => {
+    if (!el) return;
+    el.innerHTML = "";
+    const tout = document.createElement("option");
+    tout.value = "";
+    tout.textContent = libelleTout;
+    el.appendChild(tout);
+    for (const v of valeurs) {
+      const o = document.createElement("option");
+      o.value = v.id;
+      o.textContent = v.nom;
+      el.appendChild(o);
+    }
+  };
+
+  remplir(selAge, declinaisons.axes?.tranchesAge || [], "Toutes");
+  remplir(
+    selGender,
+    (declinaisons.axes?.sexes || []).map((s) => ({
+      id: s.id,
+      nom: LIBELLE_SEXE[s.id] || s.nom,
+    })),
+    "Tous"
+  );
+  majAvertissementDeclinaison();
+}
+
+/** La combinaison actuellement selectionnee, si le registre la connait. */
+function declinaisonChoisie() {
+  const dialecte = selDialect?.value;
+  const langue = selSrcLang?.value === "auto" ? null : selSrcLang?.value;
+  const age = selAge?.value || null;
+  const sexe = selGender?.value || null;
+  return (declinaisons.variants || []).find(
+    (v) =>
+      v.dialecte === dialecte &&
+      (!langue || v.langue === langue) &&
+      v.trancheAge === age &&
+      v.sexe === sexe
+  );
+}
+
+/**
+ * Dit ce que la combinaison choisie vaut aujourd'hui.
+ *
+ * Deux informations, et les deux comptent : le corpus reellement collecte
+ * pour cette combinaison, et si un modele lui est propre. Aucun ne l'est
+ * encore — le dire evite de faire passer une demonstration generique pour une
+ * voix sur mesure, ce qui se verrait a la premiere ecoute.
+ */
+function majAvertissementDeclinaison() {
+  if (!elVariantNotice) return;
+  const v = declinaisonChoisie();
+  if (!v) {
+    elVariantNotice.textContent =
+      "Cette combinaison n'est pas encore enregistree : la demonstration repondra avec le modele general.";
+    return;
+  }
+  const c = v.corpus || {};
+  const minutes = Math.round((c.secondesAudio || 0) / 60);
+  const corpus =
+    (c.traductions || 0) === 0 && minutes === 0
+      ? "Aucune donnee collectee pour cette combinaison a ce jour."
+      : `${(c.traductions || 0).toLocaleString("fr-FR")} traductions et ${minutes} min de voix collectees pour cette combinaison.`;
+  elVariantNotice.textContent = v.modele?.propre
+    ? `Modele propre a cette combinaison. ${corpus}`
+    : `Aucun modele n'est encore entraine pour cette combinaison : le modele general repond, la voix ne sera donc ni de cette tranche d'age ni de ce sexe. ${corpus}`;
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 function init() {
   btnToggle        = document.getElementById("btn-toggle");
   selDialect       = document.getElementById("sel-dialect");
   selSrcLang       = document.getElementById("sel-src-lang");
+  selAge           = document.getElementById("sel-age");
+  selGender        = document.getElementById("sel-gender");
+  elVariantNotice  = document.getElementById("variant-notice");
   elState          = document.getElementById("el-state");
   elProb           = document.getElementById("el-prob");
   elTranscript     = document.getElementById("el-transcript");
@@ -465,6 +596,13 @@ function init() {
   // L'avertissement suit le dialecte choisi : sans cet ecouteur, il resterait
   // celui du premier dialecte et mentirait des le second clic.
   selDialect.addEventListener("change", majAvertissementModele);
+
+  // Les quatre axes decrivent une seule combinaison : changer l'un d'eux
+  // change ce que vaut la declinaison, donc ce qu'il faut afficher.
+  [selDialect, selSrcLang, selAge, selGender].forEach((el) => {
+    if (el) el.addEventListener("change", majAvertissementDeclinaison);
+  });
+  void chargerDeclinaisons();
 
   elBtnStart.addEventListener("click", () => {
     hideWelcomeModal();
