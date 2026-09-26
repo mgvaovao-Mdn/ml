@@ -31,7 +31,11 @@ log = logging.getLogger(__name__)
 def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--dialect", required=True,
-                   choices=["plt_latn","betsileo","betsimisaraka","sakalava"])
+                   help="Identifiant du corpus a entrainer : un dialecte, ou une "
+                        "declinaison complete comme betsileo__en__18_25__female. "
+                        "La liste n'est plus figee ici : les dialectes viennent du "
+                        "CRUD de collecte, et une liste ecrite en dur rejetait tout "
+                        "dialecte ajoute apres la derniere image construite.")
     p.add_argument("--epochs",    type=int,   default=None)
     p.add_argument("--lr",        type=float, default=None)
     p.add_argument("--from-base", action="store_true",

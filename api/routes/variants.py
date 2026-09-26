@@ -96,26 +96,38 @@ def resoudre(
     langue: str | None = None,
     tranche_age: str | None = None,
     sexe: str | None = None,
+    thematique: str | None = None,
 ) -> dict | None:
     """
     Trouve la declinaison correspondant aux axes demandes.
 
-    Une correspondance exacte est cherchee d'abord ; a defaut on elargit en
-    retirant les axes de voix. Refuser faute de combinaison exacte priverait la
-    personne d'une demonstration qui, de toute facon, sera servie par le meme
-    modele de base.
+    Une correspondance exacte est cherchee d'abord ; a defaut on elargit, du
+    plus specifique au plus general. Refuser faute de combinaison exacte
+    priverait la personne d'une demonstration qui, de toute facon, sera servie
+    par le meme modele de base.
+
+    Le dialecte de sortie et la langue d'entree ne sont jamais elargis : livrer
+    un autre dialecte que celui demande serait livrer autre chose que le
+    produit, et changer la langue d'entree rendrait la demonstration
+    incomprehensible sans dire pourquoi.
     """
     candidats = [
-        (langue, tranche_age, sexe),
-        (langue, tranche_age, None),
-        (langue, None, sexe),
-        (langue, None, None),
+        (thematique, tranche_age, sexe),
+        (thematique, tranche_age, None),
+        (thematique, None, sexe),
+        (thematique, None, None),
+        (None, tranche_age, sexe),
+        (None, tranche_age, None),
+        (None, None, sexe),
+        (None, None, None),
     ]
-    for lg, age, sx in candidats:
+    for th, age, sx in candidats:
         for v in registre().get("variants", []):
             if v.get("dialecte") != dialecte:
                 continue
-            if lg and v.get("langue") != lg:
+            if langue and v.get("langue") != langue:
+                continue
+            if (v.get("thematique") or None) != th:
                 continue
             if v.get("trancheAge") != age:
                 continue

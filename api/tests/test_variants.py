@@ -21,15 +21,25 @@ def registre(entrees):
     variants._cache["at"] = float("inf")
 
 
-def declinaison(dialecte, langue, age=None, sexe=None, propre=False):
+def declinaison(dialecte, langue, age=None, sexe=None, theme=None, propre=False):
+    cle = f"{dialecte}__{langue}__{age or 'tousages'}__{(sexe or 'tous').lower()}"
     return {
-        "id": f"{dialecte}__{langue}__{age or 'tousages'}__{(sexe or 'tous').lower()}",
+        "id": cle + (f"__{theme}" if theme else ""),
         "dialecte": dialecte,
         "langue": langue,
         "trancheAge": age,
         "sexe": sexe,
+        "thematique": theme,
         "corpus": {"traductions": 0, "enregistrements": 0, "secondesAudio": 0},
-        "modele": {"propre": propre, "statut": "TRAINED" if propre else "BASELINE"},
+        "modele": {
+            "propre": propre,
+            "statut": "TRAINED" if propre else "BASELINE",
+            "briques": {
+                "asr": "BASELINE",
+                "mt": "TRAINED" if propre else "BASELINE",
+                "tts": "BASELINE",
+            },
+        },
     }
 
 
@@ -82,6 +92,43 @@ class Resolution(unittest.TestCase):
     def test_registre_vide_ne_leve_pas(self):
         registre([])
         self.assertIsNone(variants.resoudre("betsileo", "en"))
+
+
+class AxeThematique(unittest.TestCase):
+    def setUp(self):
+        registre([
+            declinaison("betsileo", "en"),
+            declinaison("betsileo", "en", theme="sante"),
+            declinaison("betsileo", "en", "18_25", "FEMALE", "sante"),
+        ])
+
+    def tearDown(self):
+        variants._cache["data"] = None
+        variants._cache["at"] = 0.0
+
+    def test_combinaison_complete(self):
+        # Le cas commercial complet : centre d'appels sante, voix de jeune
+        # femme betsileo, entree anglaise.
+        v = variants.resoudre("betsileo", "en", "18_25", "FEMALE", "sante")
+        self.assertEqual(v["id"], "betsileo__en__18_25__female__sante")
+
+    def test_elargit_la_voix_avant_la_thematique(self):
+        # Le domaine prime sur la voix : un centre d'appels sante servi avec
+        # un corpus sport serait hors sujet, alors qu'une voix d'un autre age
+        # reste comprehensible.
+        v = variants.resoudre("betsileo", "en", "46_55", "MALE", "sante")
+        self.assertEqual(v["thematique"], "sante")
+        self.assertIsNone(v["trancheAge"])
+
+    def test_retombe_sur_toutes_thematiques(self):
+        v = variants.resoudre("betsileo", "en", None, None, "politique")
+        self.assertIsNone(v["thematique"])
+
+    def test_sans_thematique_ne_prend_pas_une_thematique(self):
+        # Demander « toutes thematiques » doit donner le corpus large, pas
+        # celui d'une thematique choisie au hasard.
+        v = variants.resoudre("betsileo", "en")
+        self.assertIsNone(v["thematique"])
 
 
 class Repli(unittest.TestCase):

@@ -122,6 +122,7 @@ async def stream_audio(
     src_lang: str | None = None,
     age_range: str | None = None,
     gender: str | None = None,
+    theme: str | None = None,
 ):
     """
     Real-time audio translation via WebSocket.
@@ -175,7 +176,7 @@ async def stream_audio(
     # Elle est resolue et annoncee quand meme, pour deux raisons : la personne
     # doit savoir ce qu'elle ecoute, et le jour ou un point de controle propre
     # apparait, seul le chargement changera — pas le protocole.
-    declinaison = resoudre_declinaison(dialect, src_lang, age_range, gender)
+    declinaison = resoudre_declinaison(dialect, src_lang, age_range, gender, theme)
     if declinaison is not None:
         await websocket.send_json({
             "type": "variant",
@@ -184,6 +185,8 @@ async def stream_audio(
             "langue": declinaison.get("langue"),
             "trancheAge": declinaison.get("trancheAge"),
             "sexe": declinaison.get("sexe"),
+            "thematique": declinaison.get("thematique"),
+            "briques": (declinaison.get("modele") or {}).get("briques"),
             "corpus": declinaison.get("corpus"),
             # Faux tant qu'aucun modele n'a ete entraine pour cette
             # combinaison : le taire ferait passer une demonstration generique

@@ -28,7 +28,7 @@ let inactivityTimer  = null;
 let disconnectReason = "manual"; // "manual" | "inactivity"
 
 // ── DOM refs (populated in init()) ───────────────────────────────────────────
-let btnToggle, selDialect, selSrcLang, selAge, selGender;
+let btnToggle, selDialect, selSrcLang, selAge, selGender, selTheme;
 let elVariantNotice;
 let elState, elProb, elTranscript, elTranslation, elLatency, elLog;
 let elLoadingOverlay, elLoadingMsg, elProcessingBanner, elSpeakerAnim;
@@ -46,12 +46,13 @@ const COLLECTE_URL = "https://kozy.mg";
  * tranche d'age et sexe de la voix. C'est la combinaison, et non le dialecte
  * seul, qui designe ce qu'une entreprise commanderait.
  */
-function wsUrl(dialect, srcLang, age, gender) {
+function wsUrl(dialect, srcLang, age, gender, theme) {
   const proto = location.protocol === "https:" ? "wss" : "ws";
   const q = new URLSearchParams();
   if (srcLang !== "auto") q.set("src_lang", srcLang);
   if (age) q.set("age_range", age);
   if (gender) q.set("gender", gender);
+  if (theme) q.set("theme", theme);
   const suffixe = q.toString() ? `?${q.toString()}` : "";
   return `${proto}://${location.host}/ws/stream/${dialect}${suffixe}`;
 }
@@ -61,9 +62,13 @@ function connect() {
   const srcLang = selSrcLang.value;
   const age     = selAge ? selAge.value : "";
   const gender  = selGender ? selGender.value : "";
+  const theme   = selTheme ? selTheme.value : "";
 
-  log(`Connexion [dialecte=${dialect} entree=${srcLang} age=${age || "tous"} sexe=${gender || "tous"}]…`);
-  ws = new WebSocket(wsUrl(dialect, srcLang, age, gender));
+  log(
+    `Connexion [dialecte=${dialect} entree=${srcLang} age=${age || "tous"} ` +
+      `sexe=${gender || "tous"} theme=${theme || "toutes"}]…`
+  );
+  ws = new WebSocket(wsUrl(dialect, srcLang, age, gender, theme));
 
   ws.onopen    = () => { log("Connecté"); startMic(); };
   ws.onmessage = (e) => handleMessage(JSON.parse(e.data));
@@ -352,6 +357,7 @@ function setBtn(active) {
   if (selSrcLang) selSrcLang.disabled = active;
   if (selAge) selAge.disabled = active;
   if (selGender) selGender.disabled = active;
+  if (selTheme) selTheme.disabled = active;
   selSrcLang.disabled = active;
 }
 
@@ -517,6 +523,7 @@ async function chargerDeclinaisons() {
   };
 
   remplir(selAge, declinaisons.axes?.tranchesAge || [], "Toutes");
+  remplir(selTheme, declinaisons.axes?.thematiques || [], "Toutes");
   remplir(
     selGender,
     (declinaisons.axes?.sexes || []).map((s) => ({
@@ -534,12 +541,14 @@ function declinaisonChoisie() {
   const langue = selSrcLang?.value === "auto" ? null : selSrcLang?.value;
   const age = selAge?.value || null;
   const sexe = selGender?.value || null;
+  const theme = selTheme?.value || null;
   return (declinaisons.variants || []).find(
     (v) =>
       v.dialecte === dialecte &&
       (!langue || v.langue === langue) &&
       v.trancheAge === age &&
-      v.sexe === sexe
+      v.sexe === sexe &&
+      (v.thematique ?? null) === theme
   );
 }
 
@@ -578,6 +587,7 @@ function init() {
   selSrcLang       = document.getElementById("sel-src-lang");
   selAge           = document.getElementById("sel-age");
   selGender        = document.getElementById("sel-gender");
+  selTheme         = document.getElementById("sel-theme");
   elVariantNotice  = document.getElementById("variant-notice");
   elState          = document.getElementById("el-state");
   elProb           = document.getElementById("el-prob");
@@ -599,7 +609,7 @@ function init() {
 
   // Les quatre axes decrivent une seule combinaison : changer l'un d'eux
   // change ce que vaut la declinaison, donc ce qu'il faut afficher.
-  [selDialect, selSrcLang, selAge, selGender].forEach((el) => {
+  [selDialect, selSrcLang, selAge, selGender, selTheme].forEach((el) => {
     if (el) el.addEventListener("change", majAvertissementDeclinaison);
   });
   void chargerDeclinaisons();

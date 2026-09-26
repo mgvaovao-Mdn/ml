@@ -23,6 +23,10 @@ substitutions:
   # une soumission manuelle le laisse vide et le build echoue sur un nom
   # d'image invalide. Passer _TAG explicitement rend les deux voies possibles.
   _TAG: manual
+  # Job d'affinage des declinaisons.
+  _FINETUNE_JOB: "kozy-finetune"
+  # Corpus minimal sous lequel l'affinage degrade le modele de base.
+  _FINETUNE_MIN_LIGNES: "200"
   # Garde-fous d'usage de la demonstration — voir api/quotas.py.
   #
   # Le service tourne sur un GPU facture a la seconde d'instance, et Cloud Run
@@ -115,6 +119,35 @@ steps:
       - --set-env-vars=MGVAOVAO_DEVICE=cuda,MGVAOVAO_WHISPER_MODEL_SIZE=small,MGVAOVAO_COLLECTION_URL=${_COLLECTION_URL},QUOTA_SESSIONS_PAR_IP=${_QUOTA_SESSIONS_PAR_IP},QUOTA_RAFALE=${_QUOTA_RAFALE},QUOTA_RAFALE_FENETRE_S=${_QUOTA_RAFALE_FENETRE_S},QUOTA_DUREE_SESSION_S=${_QUOTA_DUREE_SESSION_S},QUOTA_SILENCE_S=${_QUOTA_SILENCE_S},QUOTA_BUDGET_IP_S=${_QUOTA_BUDGET_IP_S},QUOTA_BUDGET_GLOBAL_S=${_QUOTA_BUDGET_GLOBAL_S},QUOTA_REST=${_QUOTA_REST},QUOTA_REST_FENETRE_S=${_QUOTA_REST_FENETRE_S}
       - --allow-unauthenticated
       - --quiet
+
+  # ── Job d'affinage, meme image ─────────────────────────────────────────────
+  #
+  # Un seul job sert toutes les declinaisons : chaque lancement lui passe ses
+  # variables. En creer un par declinaison en produirait des milliers.
+  #
+  # Un job detruit son instance quand la tache se termine : il n'y a rien a
+  # eteindre, donc rien qui puisse rester allume par oubli. C'est la raison du
+  # choix, devant une VM moins chere a l'heure mais facturee tant qu'on ne l'a
+  # pas supprimee.
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
+    id: finetune-job
+    entrypoint: "bash"
+    waitFor: [push-sha]
+    args:
+      - "-c"
+      - |
+        # --task-timeout est une borne dure : un entrainement qui derape est
+        # tue par la plateforme, sans surveillance humaine.
+        gcloud run jobs deploy ${_FINETUNE_JOB} \
+          --image=us-central1-docker.pkg.dev/$PROJECT_ID/mgvaovao/inference:${_TAG} \
+          --region=${_REGION} --project=$PROJECT_ID \
+          --gpu=1 --gpu-type=nvidia-l4 --no-gpu-zonal-redundancy \
+          --cpu=8 --memory=32Gi \
+          --task-timeout=7200s --max-retries=0 --parallelism=1 \
+          --command="python" \
+          --args="training/finetune_variant.py" \
+          --set-env-vars="MGVAOVAO_DEVICE=cuda,FINETUNE_MIN_LIGNES=${_FINETUNE_MIN_LIGNES}" \
+          --quiet
 
 images:
   - us-central1-docker.pkg.dev/$PROJECT_ID/mgvaovao/inference:${_TAG}
