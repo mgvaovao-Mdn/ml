@@ -138,11 +138,11 @@ def resolve_base_model(dialect: str, force_base: bool, paths: dict) -> str:
 
 def main():
     args  = parse_args()
-    from mgvaovao.core.config import settings, DIALECT_META
+    from mgvaovao.core.config import settings, DIALECT_META, meta_du_corpus
     import torch
     from torch.utils.data import DataLoader
 
-    cfg   = DIALECT_META[args.dialect]
+    cfg   = meta_du_corpus(args.dialect)
     paths = {k: str(v) for k, v in settings.tts_paths(args.dialect).items()}
     tc = {
         "model_name":            settings.tts_model_name,

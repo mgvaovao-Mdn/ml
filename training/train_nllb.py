@@ -93,11 +93,11 @@ def main():
     args = parse_args()
 
     from mgvaovao.core.config import (
-        settings, DIALECT_META, SRC_LANGS, NEW_LANG_TOKENS,
+        settings, DIALECT_META, SRC_LANGS, NEW_LANG_TOKENS, meta_du_corpus,
     )
     import torch
 
-    cfg   = DIALECT_META[args.dialect]
+    cfg   = meta_du_corpus(args.dialect)
     paths = {k: str(v) for k, v in settings.nllb_paths(args.dialect).items()}
 
     # Build a mutable config dict from settings (CLI overrides applied below)

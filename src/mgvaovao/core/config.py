@@ -72,6 +72,32 @@ DIALECT_META: dict = {
     },
 }
 
+def meta_du_corpus(identifiant: str) -> dict:
+    """
+    Metadonnees du dialecte d'un identifiant de corpus.
+
+    Un corpus s'identifie soit par un dialecte — « betsileo » — soit par une
+    declinaison complete — « betsileo__en__18_25__female__sante ». Dans le
+    second cas, le dialecte est le premier segment : c'est lui qui decide du
+    jeton cible NLLB, les autres axes ne changent que le sous-ensemble de
+    lignes retenu.
+
+    Un acces direct a DIALECT_META echouait sur un identifiant de declinaison,
+    apres que le job eut demarre un GPU, telecharge le corpus et prepare ses
+    ensembles — tout le travail perdu sur un KeyError.
+    """
+    if identifiant in DIALECT_META:
+        return DIALECT_META[identifiant]
+    racine = identifiant.split("__", 1)[0]
+    if racine in DIALECT_META:
+        return DIALECT_META[racine]
+    raise KeyError(
+        f"Dialecte inconnu pour le corpus « {identifiant} » : "
+        f"ni lui ni son prefixe « {racine} » ne figurent dans DIALECT_META. "
+        f"Connus : {sorted(DIALECT_META)}"
+    )
+
+
 # Jetons à ajouter au tokenizer NLLB : ceux qui ne font pas déjà partie des 200
 # langues du modèle. `plt_Latn` en fait partie, les trois autres non.
 NEW_LANG_TOKENS: List[str] = [
