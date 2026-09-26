@@ -59,6 +59,10 @@ RUN pip install --no-cache-dir \
 COPY src/        ./src/
 COPY api/        ./api/
 COPY scripts/    ./scripts/
+# Le job d'affinage `kozy-finetune` tourne depuis cette meme image et
+# execute training/finetune_variant.py. Sans ce repertoire, le job
+# echouait sur « can't open file » apres avoir demarre un GPU.
+COPY training/   ./training/
 COPY ui/         ./ui/
 COPY pyproject.toml .
 
