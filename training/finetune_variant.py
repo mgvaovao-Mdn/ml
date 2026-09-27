@@ -191,11 +191,53 @@ def preparer_synthese(lignes: list[dict], base: Path) -> int:
 
 
 def deposer(local: Path, uri: str) -> None:
+    """Depose le modele retenu, et lui seul.
+
+    Le Trainer garde `save_total_limit` checkpoints intermediaires sur le
+    disque, chacun avec son `optimizer.pt` et sa copie de la table
+    d'embeddings. Deposer le repertoire entier a coute 2,57 Go pour un modele
+    de 564 Mo lors du premier entrainement reussi de plt_latn__fr : quatre
+    fois et demie le volume utile, facture au mois, pour chaque declinaison.
+
+    Ces intermediaires ne servent a rien une fois l'entrainement fini :
+    `load_best_model_at_end=True` fait deja que `final/` PORTE les poids du
+    meilleur pas sur eval_loss. Reprendre un entrainement interrompu depuis un
+    checkpoint n'est pas un scenario ici — le job est atomique et se relance
+    du debut.
+
+    On remonte tout de meme le `trainer_state.json` du meilleur pas : c'est
+    l'historique des pertes, quelques kilo-octets, et c'est la seule trace de
+    ce qui s'est passe pendant l'entrainement une fois l'instance detruite.
+    """
     deposes = stockage.deposer_repertoire(local, uri)
     if deposes == 0:
         journal(f"  rien a deposer dans {uri}")
         return
     journal(f"Depot : {deposes} fichier(s) -> {uri}")
+
+
+def deposer_modele(local: Path, uri: str) -> None:
+    final = local / "final"
+    if not final.is_dir():
+        # Sans `final/`, il n'y a pas de modele a servir : le dire plutot que
+        # de deposer un repertoire vide et laisser croire a une reussite.
+        journal(f"  ATTENTION : aucun repertoire final/ dans {local}")
+        return
+    deposer(final, f"{uri}/final")
+
+    etat = _etat_du_meilleur_pas(local)
+    if etat is not None:
+        stockage.televerser(etat, f"{uri}/trainer_state.json")
+        journal(f"Depot : historique des pertes -> {uri}/trainer_state.json")
+
+
+def _etat_du_meilleur_pas(local: Path):
+    """Le `trainer_state.json` du checkpoint le plus avance, s'il existe."""
+    etats = sorted(
+        local.glob("checkpoint-*/trainer_state.json"),
+        key=lambda p: int(p.parent.name.split("-")[-1]),
+    )
+    return etats[-1] if etats else None
 
 
 def main() -> int:
@@ -228,7 +270,7 @@ def main() -> int:
         if "mt" in briques:
             preparer_splits(lignes, racine / "dataset" / "nllb_finetune" / variant)
             entrainer_traduction(variant)
-            deposer(racine / "checkpoints" / f"nllb_{variant}", f"{sortie_uri}/mt")
+            deposer_modele(racine / "checkpoints" / f"nllb_{variant}", f"{sortie_uri}/mt")
 
         if "tts" in briques:
             corpus_tts = racine / "dataset" / "tts_finetune" / variant
@@ -245,7 +287,7 @@ def main() -> int:
                     check=True,
                     cwd=str(RACINE),
                 )
-                deposer(racine / "checkpoints" / f"tts_{variant}", f"{sortie_uri}/tts")
+                deposer_modele(racine / "checkpoints" / f"tts_{variant}", f"{sortie_uri}/tts")
 
     journal("=== termine — l'instance va etre detruite ===")
     return 0
